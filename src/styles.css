@@ -1,0 +1,55 @@
+#White {
+  background-color: white;
+}
+
+Rectangle {
+  background-image: None;
+  border-image: None;
+  background-color: #fce94f;
+  border-width: 2px;
+  border-color: gray;
+  border-radius: 7px;
+}
+
+Rectangle:focused {
+  background-color: #ffcd00;
+  border-color: black;
+  border-width: 2px;
+}
+
+#Dependency {
+  background-color: #ffcd00;
+}
+
+#Orange {
+  background-image: None;
+  border-image: None;
+  background-color: #f57900;
+}
+
+#Chocolate {
+  background-image: None;
+  border-image: None;
+  background-color: #8f5902;
+}
+
+#Chameleon {
+  background-color: #4e9a06;
+}
+
+#SkyBlue {
+  background-color: #204a87;
+}
+
+#Plum {
+  background-color: #5c3566;
+}
+
+#ScarletRed {
+  background-color: #cc0000;
+}
+
+skladiste {
+  color: #fce94f;
+}
+
