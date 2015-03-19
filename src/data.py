@@ -6,6 +6,7 @@ Created: 2014 - 2015
 
 Gathering data by these commands: lsblk, df, pvs, vgs, lvs.
 
+Instructions when running in eclipse:
 Add this line to the end of /etc/sudoers ('username' replace with your username)
 username ALL = NOPASSWD: ALL 
 And comment this line (if it's present) in /etc/sudoers
@@ -250,10 +251,12 @@ class Elements:
                 # Tests lvs whether they are pv. Compares names.
                 for pv in pvs:
                     if pv['name'].count('/') > 2:
-                        vg_part = pv['name'].split('/')[-2]
-                        # Device mapper doubles every hyphen in VG name.
-                        vg_part = vg_part.replace('-','--')
-                        pv_part = pv['name'].split('/')[-1]
+                        # LVM device in lsblk output has this form:
+                        # VGname-LVname where every dash in VGname or LVname
+                        # is doubled.                    
+                        pv_name = pv['name'].replace('-','--')                        
+                        vg_part = pv_name.split('/')[-2]
+                        pv_part = pv_name.split('/')[-1]                                
                         pv_name = ''.join([vg_part, '-', pv_part])
                         if pv_name == dev['name']:
                             self.connect(dev,pv)
@@ -547,10 +550,13 @@ class Elements:
         """Given logical volume returns corresponding device from lsblk output.
         """
         result = None
-        # Device mapper doubles every hyphen in VG name.
-        vg_name = lv['vg_name'].replace('-','--')
         
-        key = ''.join([vg_name, '-', lv['name']])
+        # LVM device in lsblk output has this form: VGname-LVname
+        # where every dash in VGname or LVname is doubled.  
+        vg_name = lv['vg_name'].replace('-','--')
+        lv_name = lv['name'].replace('-','--')
+        
+        key = ''.join([vg_name, '-', lv_name])
         for dev in lvm_devices:
             if dev['name'] == key:
                 result = dev
