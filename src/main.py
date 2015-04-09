@@ -1,8 +1,7 @@
-#!/usr/bin/python
 '''
-Created: 2014 - 2015
+Created: 2015
 
-@author: mstepane
+@author: mstepane@redhat.com
 
 Displaying storage layers in GUI.
 '''
@@ -10,8 +9,9 @@ Displaying storage layers in GUI.
 from gi.repository import Gtk, Gdk, GdkPixbuf, Pango   #@UnresolvedImport
 import subprocess
 import data
+import utils
 
-FS_TYPES = ['ext3', 'ext4', 'vfat', 'ntfs', 'btrfs']
+FS_TYPES = ['ext3', 'ext4', 'vfat', 'ntfs', 'btrfs', 'xfs']
 MIN_WIDTH = 110
 MAX_WIDTH = 500
 V_GAP_SMALL = 4
@@ -126,13 +126,9 @@ class Rectangle(Gtk.Button):
             progress_bar = self.get_progress_bar(occupied)
             vbox.pack_end(progress_bar, False, False, 0)
         # free space progress bar for mounted file systems
-        elif elem['mountpoint']:
-            mounted = data.get_mounted()
-            mpoint = elem['mountpoint']
-            if mpoint in mounted.keys():
-                occupied = mounted[elem['mountpoint']]
-                progress_bar = self.get_progress_bar(occupied)
-                vbox.pack_end(progress_bar, False, False, 0)
+        elif elem['mountpoint'] and elem['fsoccupied'] >= 0:
+            progress_bar = self.get_progress_bar(elem['fsoccupied'])
+            vbox.pack_end(progress_bar, False, False, 0)
             
         self.connect('button-press-event', self.on_button_press)
                 
@@ -148,7 +144,7 @@ class Rectangle(Gtk.Button):
     
     def on_button_press(self, widget, event):
 
-        elem = data.get_by_uuid(self.uuid, self.all_elems)
+        elem = utils.get_by_uuid(self.uuid, self.all_elems)
         if event.button == 3:
             if elem['name'] == 'loop3' and elem['type'] == 'loop':
 
@@ -225,73 +221,73 @@ class Rectangle(Gtk.Button):
             
     def get_dependencies(self):
  
-        elem = data.get_by_uuid(self.uuid, self.all_elems)
+        elem = utils.get_by_uuid(self.uuid, self.all_elems)
         dependencies = [self.uuid]
         
         # Appends parents and grandparents and so on.
         for p_uuid in elem['parents']:
             dependencies.append(p_uuid)
-            p = data.get_by_uuid(p_uuid,self.all_elems)
+            p = utils.get_by_uuid(p_uuid,self.all_elems)
             for p1_uuid in p['parents']:
                 dependencies.append(p1_uuid)
-                p1 = data.get_by_uuid(p1_uuid,self.all_elems)
+                p1 = utils.get_by_uuid(p1_uuid,self.all_elems)
                 for p2_uuid in p1['parents']:
                     dependencies.append(p2_uuid)
-                    p2 = data.get_by_uuid(p2_uuid,self.all_elems)
+                    p2 = utils.get_by_uuid(p2_uuid,self.all_elems)
                     for p3_uuid in p2['parents']:
                         dependencies.append(p3_uuid)
-                        p3 = data.get_by_uuid(p3_uuid,self.all_elems)
+                        p3 = utils.get_by_uuid(p3_uuid,self.all_elems)
                         for p4_uuid in p3['parents']:
                             dependencies.append(p4_uuid)
-                            p4 = data.get_by_uuid(p4_uuid,self.all_elems)
+                            p4 = utils.get_by_uuid(p4_uuid,self.all_elems)
                             for p5_uuid in p4['parents']:
                                 dependencies.append(p5_uuid)
-                                p5 = data.get_by_uuid(p5_uuid,self.all_elems)
+                                p5 = utils.get_by_uuid(p5_uuid,self.all_elems)
                                 for p6_uuid in p5['parents']:
                                     dependencies.append(p6_uuid)
-                                    p6 = data.get_by_uuid(p6_uuid,self.all_elems)
+                                    p6 = utils.get_by_uuid(p6_uuid,self.all_elems)
                                     for p7_uuid in p6['parents']:
                                         dependencies.append(p7_uuid)
-                                        p7 = data.get_by_uuid(p7_uuid,self.all_elems)
+                                        p7 = utils.get_by_uuid(p7_uuid,self.all_elems)
                                         for p8_uuid in p7['parents']:
                                             dependencies.append(p8_uuid)
-                                            p8 = data.get_by_uuid(p8_uuid,self.all_elems)
+                                            p8 = utils.get_by_uuid(p8_uuid,self.all_elems)
                                             for p9_uuid in p8['parents']:
                                                 dependencies.append(p9_uuid)
-                                                p9 = data.get_by_uuid(p9_uuid,self.all_elems)
+                                                p9 = utils.get_by_uuid(p9_uuid,self.all_elems)
                                                 for p10_uuid in p9['parents']:
                                                     dependencies.append(p10_uuid)
         # Appends children, grandchildren and so on.
         for p_uuid in elem['children']:
             dependencies.append(p_uuid)
-            p = data.get_by_uuid(p_uuid,self.all_elems)
+            p = utils.get_by_uuid(p_uuid,self.all_elems)
             for p1_uuid in p['children']:
                 dependencies.append(p1_uuid)
-                p1 = data.get_by_uuid(p1_uuid,self.all_elems)
+                p1 = utils.get_by_uuid(p1_uuid,self.all_elems)
                 for p2_uuid in p1['children']:
                     dependencies.append(p2_uuid)
-                    p2 = data.get_by_uuid(p2_uuid,self.all_elems)
+                    p2 = utils.get_by_uuid(p2_uuid,self.all_elems)
                     for p3_uuid in p2['children']:
                         dependencies.append(p3_uuid)
-                        p3 = data.get_by_uuid(p3_uuid,self.all_elems)
+                        p3 = utils.get_by_uuid(p3_uuid,self.all_elems)
                         for p4_uuid in p3['children']:
                             dependencies.append(p4_uuid)
-                            p4 = data.get_by_uuid(p4_uuid,self.all_elems)
+                            p4 = utils.get_by_uuid(p4_uuid,self.all_elems)
                             for p5_uuid in p4['children']:
                                 dependencies.append(p5_uuid)
-                                p5 = data.get_by_uuid(p5_uuid,self.all_elems)
+                                p5 = utils.get_by_uuid(p5_uuid,self.all_elems)
                                 for p6_uuid in p5['children']:
                                     dependencies.append(p6_uuid)
-                                    p6 = data.get_by_uuid(p6_uuid,self.all_elems)
+                                    p6 = utils.get_by_uuid(p6_uuid,self.all_elems)
                                     for p7_uuid in p6['children']:
                                         dependencies.append(p7_uuid)
-                                        p7 = data.get_by_uuid(p7_uuid,self.all_elems)
+                                        p7 = utils.get_by_uuid(p7_uuid,self.all_elems)
                                         for p8_uuid in p7['children']:
                                             dependencies.append(p8_uuid)
-                                            p8 = data.get_by_uuid(p8_uuid,self.all_elems)
+                                            p8 = utils.get_by_uuid(p8_uuid,self.all_elems)
                                             for p9_uuid in p8['children']:
                                                 dependencies.append(p9_uuid)
-                                                p9 = data.get_by_uuid(p9_uuid,self.all_elems)
+                                                p9 = utils.get_by_uuid(p9_uuid,self.all_elems)
                                                 for p10_uuid in p9['children']:
                                                     dependencies.append(p10_uuid)
         
@@ -327,7 +323,7 @@ class Rectangle(Gtk.Button):
             elif elem['fstype'].startswith('LVM'):
                 icon_name = 'pv'
             elif elem['children']:
-                child = data.get_by_uuid(elem['children'][0], self.all_elems)
+                child = utils.get_by_uuid(elem['children'][0], self.all_elems)
                 if child['type'] == 'pv':
                     icon_name = 'pv'
                 else:
@@ -472,7 +468,7 @@ class Scheme(Gtk.Box):
             disk_box.add(part_rows)
             
             for elem_uuid in disk['children']:
-                elem = data.get_by_uuid(elem_uuid, all_elems)
+                elem = utils.get_by_uuid(elem_uuid, all_elems)
                 if elem['type'] == 'pv':
                     break
                 elif elem['type'] == 'part':
@@ -490,7 +486,7 @@ class Scheme(Gtk.Box):
                         md_raids_added.append(elem['uuid'])
                 # md raids        
                 for elem2_uuid in elem['children']:
-                    elem2 = data.get_by_uuid(elem2_uuid, all_elems)
+                    elem2 = utils.get_by_uuid(elem2_uuid, all_elems)
                     if elem2['type'] == 'pv':
                         break
                     elif not md_raid_present:  
@@ -548,7 +544,7 @@ class Scheme(Gtk.Box):
             rest = []
             # cache logical volumes rectangles
             for lv_uuid in vg['children']:                
-                lv = data.get_by_uuid(lv_uuid, lvs)   
+                lv = utils.get_by_uuid(lv_uuid, lvs)  
                 if lv['segtype'] == 'cache-pool':
                     continue
                 elif lv['segtype'] == 'cache':
@@ -556,7 +552,7 @@ class Scheme(Gtk.Box):
                     cached[lv_name] = Gtk.Box()
                     lv_rows[vg_name].add(cached[lv_name])
                     
-                    cache_pool = data.get_by_name(lv['pool_lv'], lvs)
+                    cache_pool = utils.get_by_name(lv['pool_lv'], lvs)
                     self.add_rectangle(cache_pool, cached[lv_name])
                     
                     pixbuf = GdkPixbuf.Pixbuf()
@@ -575,7 +571,7 @@ class Scheme(Gtk.Box):
 
             # thin pools   
             for pool_uuid in thin_pools:
-                pool = data.get_by_uuid(pool_uuid, lvs)                
+                pool = utils.get_by_uuid(pool_uuid, lvs)                
                 self.add_rectangle(pool, lv_rows[vg_name])                 
                 
                 if pool['children']:            
@@ -588,14 +584,14 @@ class Scheme(Gtk.Box):
                     
                 # thin logical volumes rectangles                
                 for thin_lv_uuid in pool['children']:
-                    thin_lv = data.get_by_uuid(thin_lv_uuid, lvs)
+                    thin_lv = utils.get_by_uuid(thin_lv_uuid, lvs)
                     self.add_rectangle(thin_lv, thin_box)    
                                 
             vg_boxes_plus[vg_name].add(thin_rows[vg_name])
             
             # logical volumes rectangles
             for lv_uuid in rest:
-                lv = data.get_by_uuid(lv_uuid, lvs)   
+                lv = utils.get_by_uuid(lv_uuid, lvs)   
                 self.add_rectangle(lv, lv_rows[vg_name])      
      
 
@@ -664,7 +660,7 @@ class InfoBox(Gtk.Alignment):
     def __init__(self, all_elems, uuid=None):
         Gtk.Alignment.__init__(self, xalign=0.5)
         
-        elem = data.get_by_uuid(uuid,all_elems)
+        elem = utils.get_by_uuid(uuid,all_elems)
         
         self.box = Gtk.Box(halign=Gtk.Align.CENTER, spacing=5, margin_top=15)
         self.add(self.box)
@@ -833,17 +829,17 @@ class TreePanel(Gtk.Box):
         for elem1 in roots:            
             parent_row2 = self.append_row(elem1, store, None, info)                        
             for elem2_uuid in elem1['children']:              
-                elem2 = data.get_by_uuid(elem2_uuid, elements)
+                elem2 = utils.get_by_uuid(elem2_uuid, elements)
                 if elem2['type'] == 'pv':
                     break  
                 parent_row3 = self.append_row(elem2, store, parent_row2, info)                                                  
                 for elem3_uuid in elem2['children']:
-                    elem3 = data.get_by_uuid(elem3_uuid, elements)
+                    elem3 = utils.get_by_uuid(elem3_uuid, elements)
                     if elem3['type'] == 'pv':
                         break 
                     parent_row4 = self.append_row(elem3, store, parent_row3, info)                        
                     for elem4_uuid in elem3['children']:
-                        elem4 = data.get_by_uuid(elem4_uuid, elements)
+                        elem4 = utils.get_by_uuid(elem4_uuid, elements)
                         if elem4['type'] == 'pv':
                             break
                         self.append_row(elem4, store, parent_row4, info)  
@@ -864,7 +860,7 @@ class TreePanel(Gtk.Box):
         if elem['label']['type']['short'] == 'Cache pool':
                 icon = None
         elif elem['children']:
-            child = data.get_by_uuid(elem['children'][0], self.all_elems)
+            child = utils.get_by_uuid(elem['children'][0], self.all_elems)
             if child['type'] == 'pv':
                 icon = icons['pv'] 
             else:
@@ -899,7 +895,7 @@ class MainWindow(Gtk.Window):
                             width_request=400, height_request=500,
                             border_width=5, title='Storage visualization')
 
-        elems = data.Elements()
+        elems = data.Data()
         (all_elems, pvs, vgs, lvs, disks_loops) = elems.get_data()
               
         self.paned = Gtk.Paned()
