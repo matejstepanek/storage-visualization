@@ -15,6 +15,7 @@ It enables you to run sudo commands without entering the password.
 
 import lsblk_data
 import lvm_data
+import utils
 
 
 class Data:
@@ -23,56 +24,96 @@ class Data:
     Putting together data from lsblk, lvs, vgs and pvs commands.
     """
            
-    def get_data(self):
-        """Returns storage elements connected into tree structure.
-        """
+    def __init__(self):
         
-        lvmdata = lvm_data.LvmData()
-        pvs = lvmdata.get_pvs()
-        vgs = lvmdata.get_vgs()  
+        self.pvs = lvm_data.get_pvs()
+        self.vgs = lvm_data.get_vgs()  
         
-        lsblkdata = lsblk_data.LsblkData()
-        lsblk_with_pvs = lsblkdata.get_lsblk_elements(pvs)
+        lsblk_with_pvs = lsblk_data.get_lsblk_elements(self.pvs)
         
-        (lsblk_no_lvm, lsblk_lvm) = self.separate_lvm_elements(lsblk_with_pvs)
+        lsblk_no_lvs, lsblk_lvs = self.separate_lvs(lsblk_with_pvs)
         
-        (lvs, _internal_lvs) = lvmdata.get_lvs(lsblk_lvm, pvs)
+        self.lvs, _internal_lvs = lvm_data.get_lvs(lsblk_lvs, self.pvs)
         
-        lvmdata.set_dependencies_lvm(pvs, vgs, lvs)
+        self.set_dependencies_lvm(self.pvs, self.vgs, self.lvs)
         
-        all_elems = lsblk_no_lvm + vgs + lvs
-        disks_loops = [d for d in lsblk_no_lvm if d['type'] in ['disk', 'loop']]
-        
-        return (all_elems, pvs, vgs, lvs, disks_loops)
-      
-    def separate_lvm_elements(self, lsblk):
-        """Divides devices into 2 lists: 
-            1) disk, loops, partitions, md raids
-            2) lvm devices (i.e. logical volumes) 
+        self.all_elems = lsblk_no_lvs + self.vgs + self.lvs
+        self.disks_loops = [d for d in lsblk_no_lvs if d['type'] in ['disk', 'loop']]
+
+
+    def separate_lvs(self, lsblk):
+        """Divides lsblk elements into 2 lists: 
+            1) disk, loops, partitions, md raids, pvs
+            2) lvm devices (= logical volumes) 
         """
         
         lsblk_lvm = []
         copy_lsblk = lsblk[:]
         
-        for dev in copy_lsblk:
+        for elem in copy_lsblk:
             
-            if dev['type'] == 'lvm':                      
-                lsblk.remove(dev)
+            if elem['type'] == 'lvm':                      
+                lsblk.remove(elem)
                 
-                if dev not in lsblk_lvm:
-                    lsblk_lvm.append(dev)
+                if elem not in lsblk_lvm:
+                    lsblk_lvm.append(elem)
                     
         return (lsblk, lsblk_lvm)
 
+
+    def set_dependencies_lvm(self, pvs, vgs, lvs):
+        """Sets dependencies between volume groups and physical/logical volumes.
+        
+        Elements are connected by keys parents and children. 
+        """
+     
+        for pv in pvs:
+            self.connect_pv_vg(pv, vgs)
+                        
+        for lv in lvs:                
+            
+            if lv['pool_lv'] and lv['segtype'] != 'cache':
+                self.connect_thinlv_pool(lv, lvs)
+            else:
+                self.connect_lv_vg(lv, vgs)
                 
+    
+    def connect_pv_vg(self, pv, vgs):
+        """Connects physical volume to its volume group.
+        """
+        
+        for vg in vgs:
+            if vg['name'] == pv['vg_name']:
+                utils.connect(pv, vg)
+                break
+    
+    
+    def connect_thinlv_pool(self, thinlv, lvs):
+        """Connects thin logical volume to its pool.
+        """
+        
+        for lv in lvs:
+            if thinlv['pool_lv'] == lv['name']:
+                utils.connect(lv, thinlv)
+                break
+    
+    
+    def connect_lv_vg(self, lv, vgs):
+        """Connects logical volume to its volume group.
+        """
+        
+        for vg in vgs:
+            if lv['vg_name'] == vg['name']:
+                utils.connect(vg, lv)
+                break
+
+
 #################################### TESTING ###################################
 
 if __name__ == '__main__': 
     data = Data()
-    (all_elems, pvs, vgs, lvs, disks_loops) = data.get_data()
     print '-------------------------------------------------'
-    for x in all_elems:
+    for x in data.all_elems:
         print x['name'], x
-        
 
         

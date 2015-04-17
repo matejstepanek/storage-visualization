@@ -120,10 +120,8 @@ class Rectangle(Gtk.Button):
             progress_bar = self.get_progress_bar(occupied)
             vbox.pack_start(progress_bar, False, False, 0)
         # free space progress bar for snapshots, thin pools and thin LVs
-#         elif elem['type'] == 'lv' and (elem['data_percent'] or elem['data_percent']==0.00):
-        elif elem['type'] == 'lv' and elem['data_percent'] != '':
-            occupied = elem['data_percent']
-            progress_bar = self.get_progress_bar(occupied)
+        elif elem['type'] == 'lv' and elem['data_percent'] >= 0:
+            progress_bar = self.get_progress_bar(elem['data_percent'])
             vbox.pack_end(progress_bar, False, False, 0)
         # free space progress bar for mounted file systems
         elif elem['mountpoint'] and elem['fsoccupied'] >= 0:
@@ -896,15 +894,14 @@ class MainWindow(Gtk.Window):
                             border_width=5, title='Storage visualization')
 
         elems = data.Data()
-        (all_elems, pvs, vgs, lvs, disks_loops) = elems.get_data()
               
         self.paned = Gtk.Paned()
         self.add(self.paned)
     
-        self.scheme_box = Scheme(all_elems, pvs, vgs, lvs, disks_loops)
+        self.scheme_box = Scheme(elems.all_elems, elems.pvs, elems.vgs, elems.lvs, elems.disks_loops)
         self.paned.pack1(self.scheme_box, True, False)        
 
-        tree_panel = TreePanel(all_elems, vgs, lvs, disks_loops)
+        tree_panel = TreePanel(elems.all_elems, elems.vgs, elems.lvs, elems.disks_loops)
         self.paned.pack2(tree_panel, False, True)
         
         self.show_all()     
