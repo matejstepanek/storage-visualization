@@ -52,7 +52,7 @@ def set_label(elem, internal_lvs = None):
     The label contains information about element's:
         1) name
         2) content - file system and mountpoint
-        3) size - also available space size and percentage of occupied space
+        3) size - includes available space size and percentage of occupied space
         4) type
     """
 

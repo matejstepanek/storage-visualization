@@ -6,8 +6,9 @@ Created: 2015
 Collecting data from lsblk command output.
 '''
 
-import utils
 import subprocess
+
+import utils
 
 
 def get_lsblk_elements(pvs):

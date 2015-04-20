@@ -18,7 +18,7 @@ import lvm_data
 import utils
 
 
-class Data:
+class Elements:
     """Collecting information about storage elements in the system.
     
     Putting together data from lsblk, lvs, vgs and pvs commands.
@@ -111,7 +111,7 @@ class Data:
 #################################### TESTING ###################################
 
 if __name__ == '__main__': 
-    data = Data()
+    data = Elements()
     print '-------------------------------------------------'
     for x in data.all_elems:
         print x['name'], x

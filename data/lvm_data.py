@@ -6,9 +6,10 @@ Created: 2015
 Collecting data from pvs, vgs and lvs commands outputs.
 '''
 
-import utils
 import subprocess
 from itertools import groupby
+
+import utils
 
 
 def get_pvs():
