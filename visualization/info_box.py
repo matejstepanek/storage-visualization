@@ -21,7 +21,7 @@ class InfoBox(Gtk.Alignment):
         
         elem = get_by_uuid(uuid,all_elems)
         
-        self.box = Gtk.Box(halign=Gtk.Align.CENTER, spacing=5, margin_top=15)
+        self.box = Gtk.Box(halign=Gtk.Align.CENTER, spacing=5, margin_top=13)
         self.add(self.box)
 
         if elem:      
@@ -38,9 +38,14 @@ class InfoBox(Gtk.Alignment):
             markup = '<b>%s</b>' %elem['label']['name']
             label = Gtk.Label(xalign=0)
             label.set_markup(markup)
-            
             vbox_right.pack_start(label, False, True, 0)
-            label = Gtk.Label(elem['label']['type']['long'], xalign=0)
+            
+            
+            text_type = elem['label']['type']['long']
+            if elem['type'] in ['pv','lv']:
+                text_type += ' - in volume group %s' %elem['vg_name']
+            
+            label = Gtk.Label(text_type, xalign=0)
             vbox_right.pack_start(label, False, True, 0)
             label = Gtk.Label(elem['label']['size'], xalign=0)
             vbox_right.pack_start(label, False, True, 0)
@@ -49,17 +54,6 @@ class InfoBox(Gtk.Alignment):
                 label = Gtk.Label('Content:', xalign=1)
                 vbox_left.pack_start(label, False, True, 0)
                 label = Gtk.Label(elem['label']['content'], xalign=0)
-                vbox_right.pack_start(label, False, True, 0)
-            else:
-                label = Gtk.Label('', xalign=1)
-                vbox_left.pack_start(label, False, True, 0)
-                label = Gtk.Label('', xalign=0)
-                vbox_right.pack_start(label, False, True, 0)
-            
-            if elem['type'] in ['pv','lv']:
-                label = Gtk.Label('VG name:', xalign=1)
-                vbox_left.pack_start(label, False, True, 0)
-                label = Gtk.Label(elem['vg_name'], xalign=0)
                 vbox_right.pack_start(label, False, True, 0)
                 
 #             label = Gtk.Label('uuid:', xalign=1)

@@ -49,7 +49,7 @@ class MainWindow(Gtk.Window):
         scrolled_scheme_window.set_name('White')
         left_box.pack_start(scrolled_scheme_window, True, True, 0)
         
-        scrolled_info_window = Gtk.ScrolledWindow(height_request=90,
+        scrolled_info_window = Gtk.ScrolledWindow(height_request=110,
                                     vscrollbar_policy=Gtk.PolicyType.NEVER)
         left_box.pack_start(scrolled_info_window, False, False, 0)
         
