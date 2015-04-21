@@ -133,17 +133,39 @@ def add_partitions_to_children(devices):
     Assumption: specific order of rows in lsblk output.
     """
     
-    for i,dev in enumerate(devices):
+    loop_devices = []
+    
+    for dev in devices:
         
-        if dev['type'] == ('disk' or 'loop'):
-            
-            if dev['fstype'].startswith('crypt'):
-                parent = devices[i+1]
-            else:
-                parent = dev
+        if dev['type'] == 'disk':
+            parent = dev
         
-        elif dev['type'] == 'part':  
+        elif dev['type'] == 'part':
             utils.connect(parent, dev)
+            
+        elif dev['type'] == 'loop':
+            
+            if loop_devices:
+                recognize_partition_on_loop(dev, loop_devices)
+            else:
+                loop_devices.append(dev)
+
+
+def recognize_partition_on_loop(dev, loop_devices):
+    """Includes partition on loop device among children of it.
+    
+    Partition on loop device has type 'loop' in lsblk output, so we need
+    to compare names to recognize it. Loop device and its partitions
+    have the same 'number', for example: loop4 - loop4p1, loop4p2.    
+    """
+    
+    previous = loop_devices[-1]
+    
+    if dev['name'][4] == previous['name'][4]:
+        utils.connect(previous, dev)
+        dev['type'] = 'part'
+    else:
+        loop_devices.append(dev)
             
 
 def add_raid_to_children(devices):

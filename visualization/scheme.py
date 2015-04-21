@@ -10,7 +10,6 @@ from gi.repository import Gtk, GdkPixbuf #@UnresolvedImport
 
 from data.utils import get_by_uuid, get_by_name
 import rectangle
-import info_box
 
 MIN_WIDTH = 110
 MAX_WIDTH = 500
@@ -24,7 +23,6 @@ class Scheme(Gtk.Box):
     """Scheme of storage layers with information box.
     
     Structure of scheme:
-    - layers
         - disks_partitions_area hbox
             - disk_box vbox
                 - disk rectangles
@@ -54,33 +52,22 @@ class Scheme(Gtk.Box):
     def __init__(self, window, all_elems, pvs, vgs, lvs, disks_loops):
         
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL,
-                          width_request=200)
+                         margin_top=40, margin_bottom=40,
+                         margin_left=10, margin_right=10,
+                         halign=Gtk.Align.CENTER)
         
         self.window = window
         self.all_elems = all_elems
-        
-        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.pack_start(self.box, True, True, 0)
-        
-        scrolled_window_main = Gtk.ScrolledWindow()
-        scrolled_window_main.set_name('White')
-        self.box.pack_start(scrolled_window_main, True, True, 0)
-       
-        layers = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
-                         halign=Gtk.Align.CENTER,
-                         margin_top=40, margin_bottom=40,
-                         margin_left=10, margin_right=10)
-        scrolled_window_main.add(layers)
         
         self.rectangle = {}
         
         ########## DISKS, PARTITIONS AND MD RAID AREA ##########################
         disks_partitions_area = Gtk.Box(halign=Gtk.Align.CENTER,
                                         spacing=H_GAP_BIG)
-        layers.add(disks_partitions_area)
+        self.add(disks_partitions_area)
         
         separator1 = Gtk.Separator(margin_top=V_GAP_BIG, margin_bottom=V_GAP_BIG)
-        layers.add(separator1)
+        self.add(separator1)
         
         md_raid_present = False
         md_raids_added = []
@@ -107,7 +94,7 @@ class Scheme(Gtk.Box):
                     if not md_raid_present:  
                         mdraids_row = Gtk.Box(halign=Gtk.Align.CENTER,
                                               spacing=H_GAP_BIG)
-                        layers.add(mdraids_row)
+                        self.add(mdraids_row)
                         md_raid_present = True 
                         
                     if elem['uuid'] not in md_raids_added:             
@@ -121,7 +108,7 @@ class Scheme(Gtk.Box):
                     elif not md_raid_present:  
                         mdraids_row = Gtk.Box(halign=Gtk.Align.CENTER,
                                               spacing=H_GAP_BIG)
-                        layers.add(mdraids_row)
+                        self.add(mdraids_row)
                         md_raid_present = True   
                                    
                     if elem2['uuid'] not in md_raids_added:             
@@ -131,11 +118,11 @@ class Scheme(Gtk.Box):
         if md_raid_present:
             separator2 = Gtk.Separator(margin_top=V_GAP_BIG,
                                        margin_bottom=V_GAP_BIG)
-            layers.add(separator2)
+            self.add(separator2)
                         
         #################### LVM AREA ##########################################        
         lvm_area = Gtk.Box(halign=Gtk.Align.CENTER, spacing=H_GAP_BIG)
-        layers.add(lvm_area)          
+        self.add(lvm_area)          
          
         vg_boxes_plus = {}
         vg_alingment = {}
@@ -239,12 +226,12 @@ class Scheme(Gtk.Box):
                 self.add_rectangle(pv, pv_rows['@no vg'])
                 
         ################ INFO BOX ##############################################                                    
-        scrolled_window_info = Gtk.ScrolledWindow(height_request=90,
-                                    vscrollbar_policy=Gtk.PolicyType.NEVER)
-        self.box.pack_start(scrolled_window_info, False, False, 0)
-        
-        self.info_box = info_box.InfoBox(all_elems)
-        scrolled_window_info.add(self.info_box)
+#         scrolled_window_info = Gtk.ScrolledWindow(height_request=90,
+#                                     vscrollbar_policy=Gtk.PolicyType.NEVER)
+#         self.box.pack_start(scrolled_window_info, False, False, 0)
+#         
+#         self.info_box = info_box.InfoBox(all_elems)
+#         scrolled_window_info.add(self.info_box)
         self.show_all()
 
 

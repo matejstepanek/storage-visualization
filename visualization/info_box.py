@@ -13,7 +13,7 @@ from data.utils import get_by_uuid
 
 class InfoBox(Gtk.Alignment):
     
-    __gtype_name__ = 'InfoBox'    
+#     __gtype_name__ = 'InfoBox'    
     
     def __init__(self, all_elems, uuid=None):
         
@@ -49,6 +49,11 @@ class InfoBox(Gtk.Alignment):
                 label = Gtk.Label('Content:', xalign=1)
                 vbox_left.pack_start(label, False, True, 0)
                 label = Gtk.Label(elem['label']['content'], xalign=0)
+                vbox_right.pack_start(label, False, True, 0)
+            else:
+                label = Gtk.Label('', xalign=1)
+                vbox_left.pack_start(label, False, True, 0)
+                label = Gtk.Label('', xalign=0)
                 vbox_right.pack_start(label, False, True, 0)
             
             if elem['type'] in ['pv','lv']:

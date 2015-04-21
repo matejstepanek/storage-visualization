@@ -143,8 +143,8 @@ class Rectangle(Gtk.Button):
             rectangle = self.window.scheme_box.rectangle
             for rec in rectangle.itervalues():
                 rec.set_name('Rectangle') 
-            self.window.scheme_box.info_box.box.destroy()
-            self.window.scheme_box.info_box.__init__(self.all_elems, self.uuid)
+            self.window.info_box.box.destroy()
+            self.window.info_box.__init__(self.all_elems, self.uuid)
     
 
     def draw_dependencies(self):

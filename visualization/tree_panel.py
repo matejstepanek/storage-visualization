@@ -186,8 +186,8 @@ class TreeView(Gtk.TreeView):
         it = tree_store.get_iter(path)
         elem_id = tree_store.get_value(it,2)
         
-        self.window.scheme_box.info_box.box.destroy()
-        self.window.scheme_box.info_box.__init__(self.all_elems, elem_id)
+        self.window.info_box.box.destroy()
+        self.window.info_box.__init__(self.all_elems, elem_id)
         
         self.window.scheme_box.rectangle[elem_id].emit('focus', False)
         
