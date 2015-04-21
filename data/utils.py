@@ -73,7 +73,7 @@ def set_label_size(elem):
     
     elem['label']['size'] = make_readable(elem['size'])
     
-    free = False
+    free = -1
     
     if elem['type'] == 'vg': 
         free = elem['vg_free']
@@ -87,7 +87,7 @@ def set_label_size(elem):
         occupied = elem['fsoccupied']
         free = elem['size'] * (100-occupied) / 100
     
-    if free:
+    if free >=0:
         elem['label']['size'] += ' - %s available (%.1f %% occupied)' %(
                                         make_readable(free), occupied)
 

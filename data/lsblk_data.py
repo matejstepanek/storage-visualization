@@ -29,16 +29,14 @@ def get_lsblk_elements(pvs):
     
     lsblk_output = subprocess.check_output(['lsblk', '-Pnb', '--output',
                                 'UUID,NAME,TYPE,MOUNTPOINT,FSTYPE,SIZE'])
-    # From lsblk make list of strings (rows). Without the last empty row. 
     lsblk_list = lsblk_output.split('\n')[:-1]
     
     keys = ['uuid','name','type','mountpoint','fstype','size']
-    devices = [dict(zip(keys, dev.split())) for dev in lsblk_list]
+    devices = [dict(zip(keys, device.split())) for device in lsblk_list]
     
     process_block_devices(devices, keys)
      
-    # Preserve only devices that are interesting for us
-    devices = [dev for dev in devices if dev['type'] not in ['rom']]
+    devices = [device for device in devices if device['type'] not in ['rom']]
     
     lsblk_with_pvs = build_dependency_tree(devices, pvs)
             
@@ -53,27 +51,30 @@ def process_block_devices(devices, keys):
     """Sets and modifies some values of keys.
     """
     
-    for dev in devices:     
+    for device in devices:
+        
         # Remove name of the key from value.
         for key in keys:
-            dev[key] = dev[key].split('"')[1]
-        # Remark: There is a problem with an uuid.
-        # Eg. disk has no one at the beggining. Thats why the name is added.
-        dev['uuid'] = ''.join([dev['name'], '@', dev['uuid']])
-        dev['size'] = int(dev['size'])
-        dev['parents'] = []
-        dev['children'] = []
+            device[key] = device[key].split('"')[1]
         
-        if dev['fstype'].startswith('crypt'):
-            dev['encrypted'] = True
+        # There is a problem with an uuid.
+        # Eg. disk has no one at the beggining. Thats why the name is added.
+        device['uuid'] = ''.join([device['name'], '@', device['uuid']])
+        
+        device['size'] = int(device['size'])
+        device['parents'] = []
+        device['children'] = []
+        
+        if device['fstype'].startswith('crypt'):
+            device['encrypted'] = True
         else:
-            dev['encrypted'] = False
+            device['encrypted'] = False
         
         mounted = get_mounted()
-        if dev['mountpoint'] and dev['mountpoint'] in mounted.keys():
-            dev['fsoccupied'] = mounted[dev['mountpoint']]
+        if device['mountpoint'] and device['mountpoint'] in mounted.keys():
+            device['fsoccupied'] = mounted[device['mountpoint']]
         else:
-            dev['fsoccupied'] = -1
+            device['fsoccupied'] = -1
 
 
 def get_mounted():
@@ -121,10 +122,10 @@ def add_crypt_to_chidren(devices):
     Assumption: specific order of rows in lsblk output.
     """
     
-    for i,dev in enumerate(devices):
-        if dev['type'] == 'crypt':
+    for i,device in enumerate(devices):
+        if device['type'] == 'crypt':
             parent = devices[i-1]
-            utils.connect(parent, dev)
+            utils.connect(parent, device)
             
 
 def add_partitions_to_children(devices):
@@ -135,23 +136,23 @@ def add_partitions_to_children(devices):
     
     loop_devices = []
     
-    for dev in devices:
+    for device in devices:
         
-        if dev['type'] == 'disk':
-            parent = dev
+        if device['type'] == 'disk':
+            parent = device
         
-        elif dev['type'] == 'part':
-            utils.connect(parent, dev)
+        elif device['type'] == 'part':
+            utils.connect(parent, device)
             
-        elif dev['type'] == 'loop':
+        elif device['type'] == 'loop':
             
             if loop_devices:
-                recognize_partition_on_loop(dev, loop_devices)
+                recognize_partition_on_loop(device, loop_devices)
             else:
-                loop_devices.append(dev)
+                loop_devices.append(device)
 
 
-def recognize_partition_on_loop(dev, loop_devices):
+def recognize_partition_on_loop(device, loop_devices):
     """Includes partition on loop device among children of it.
     
     Partition on loop device has type 'loop' in lsblk output, so we need
@@ -161,11 +162,11 @@ def recognize_partition_on_loop(dev, loop_devices):
     
     previous = loop_devices[-1]
     
-    if dev['name'][4] == previous['name'][4]:
-        utils.connect(previous, dev)
-        dev['type'] = 'part'
+    if device['name'][4] == previous['name'][4]:
+        utils.connect(previous, device)
+        device['type'] = 'part'
     else:
-        loop_devices.append(dev)
+        loop_devices.append(device)
             
 
 def add_raid_to_children(devices):
@@ -176,10 +177,10 @@ def add_raid_to_children(devices):
      
     rev_devices = reversed(devices)
     
-    for dev in rev_devices:                    
-        if dev['type'].startswith('raid'):
+    for device in rev_devices:                    
+        if device['type'].startswith('raid'):
             parent = next(rev_devices)
-            utils.connect(parent, dev)
+            utils.connect(parent, device)
             
 
 def merge_raid_devices(devices):
@@ -187,18 +188,20 @@ def merge_raid_devices(devices):
     Preserves all information (all parent devices).
     """
     
-    raids = [dev for dev in devices if dev['type'].startswith('raid')]
+    raids = [device for device in devices if device['type'].startswith('raid')]
     copy_raids = list(raids)
     result = []
     checked = []
     
     for raid in raids:
+        
         if raid['uuid'] not in checked:
-            
-            for r in copy_raids:
-                if raid['uuid'] == r['uuid']:
-                    for p_uuid in r['parents']:
-                        parent = utils.get_by_uuid(p_uuid, devices)
+            for raid2 in copy_raids:
+                
+                if raid['uuid'] == raid2['uuid']:
+                    for parent_uuid in raid2['parents']:
+                        
+                        parent = utils.get_by_uuid(parent_uuid, devices)
                         utils.connect(parent, raid)
             
             result.append(raid)
@@ -216,11 +219,11 @@ def remove_duplicates(devices):
     unique = []
     result = []
     
-    for dev in devices:
+    for device in devices:
         
-        if dev['uuid'] not in unique:                
-            unique.append(dev['uuid'])
-            result.append(dev)
+        if device['uuid'] not in unique:                
+            unique.append(device['uuid'])
+            result.append(device)
             
     return result
         
@@ -262,6 +265,7 @@ def add_pvs_on_not_lvs(device, pvs):
             if pv['name'].split('/')[-1] == device['name']:
                 utils.connect(device,pv)
                 break
+
 
 def add_pvs_on_lvs(device, pvs):
     """Tests logical volumes whether they are pv. Compares names.
