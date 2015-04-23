@@ -139,21 +139,29 @@ class TreePanel(Gtk.Box):
         """Returns appropriate icon for element to display in the tree view.
         """
         icons = self.get_icons()
-        icon = icons['free']        
+        icon = icons['free']
+                
         if elem['label']['type']['short'] == 'Cache pool':
-                icon = None
+            icon = None
+        elif elem['label']['type']['short'].startswith('Thin pool'):
+            icon = None
+        elif elem['label']['type']['short'] == 'VG':    
+            icon = None
         elif elem['children']:
             child = get_by_uuid(elem['children'][0], self.all_elems)
             if child['type'] == 'pv':
                 icon = icons['pv'] 
             else:
                 icon = None
+                
         if elem['mountpoint']:
             icon = icons['mount']
         elif elem['fstype'] in FS_TYPES:
             icon = icons['fs']
+            
         if elem['fstype'].startswith('LVM'):
             icon = icons['pv']       
+        
         return icon
 
 

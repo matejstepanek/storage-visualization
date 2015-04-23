@@ -179,7 +179,7 @@ class Scheme(Gtk.Box):
                     
                     self.add_rectangle(lv, cached[lv_name])
       
-                elif lv['label']['type']['long'].startswith('Thin pool'):
+                elif lv['label']['type']['short'].startswith('Thin pool'):
                     thin_pools.append(lv_uuid)
                     continue
                 else:

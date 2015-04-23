@@ -14,6 +14,7 @@ def get_by_uuid(uuid, elements):
     match = None
     
     for elem in elements:
+        
         if elem['uuid'] == uuid:
             match = elem
             break
@@ -28,6 +29,7 @@ def get_by_name(name, elements):
     match = None
     
     for elem in elements:
+        
         if elem['name'] == name:
             match = elem
             break
@@ -73,23 +75,12 @@ def set_label_size(elem):
     
     elem['label']['size'] = make_readable(elem['size'])
     
-    free = -1
-    
-    if elem['type'] == 'vg': 
-        free = elem['vg_free']
-        occupied =  (1 - float(elem['vg_free']) / elem['size']) * 100
-    
-    elif elem['type'] == 'lv' and elem['data_percent'] >= 0:
-        occupied = elem['data_percent']
-        free = elem['size'] * (100-occupied) / 100
-    
-    elif elem['mountpoint'] and elem['fsoccupied'] >= 0:
-        occupied = elem['fsoccupied']
-        free = elem['size'] * (100-occupied) / 100
-    
-    if free >=0:
+    if elem['occupied'] >= 0:
+#         print elem['name'], elem['occupied']
+        free = elem['size'] * (1 - elem['occupied']/100)
+        
         elem['label']['size'] += ' - %s available (%.1f %% occupied)' %(
-                                        make_readable(free), occupied)
+                                        make_readable(free), elem['occupied'])
 
 
 def make_readable(size):
@@ -172,7 +163,7 @@ def set_label_type_lv(elem, internal_lvs):
     
     elif type_lv == 'thin-pool':
         elem['label']['type']['short'] = 'Thin pool'
-        elem['label']['type']['long']  = 'Thin pool'
+        elem['label']['type']['long']  = 'Pool for thin logical volumes'
         
         is_raid = check_tdata(elem, internal_lvs)
         if is_raid:

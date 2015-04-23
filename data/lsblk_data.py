@@ -19,8 +19,8 @@ def get_lsblk_elements(pvs):
     - lsblk_lvm      - list of lsblk elements (devices) of lvm type  
     
     Each item in the list is a dictionary with these keys: 
-    uuid, name, type, mountpoint, fstype, size, parents, children, encrypted,
-    label, fsoccupied.
+    uuid, name, type, mountpoint, fstype, size, occupied, parents, children,
+    encrypted, label.
     
     Label is structured: name, content, size, type.
     
@@ -41,6 +41,10 @@ def get_lsblk_elements(pvs):
     lsblk_with_pvs = build_dependency_tree(devices, pvs)
             
     for elem in lsblk_with_pvs:
+        
+        mounted = get_mounted()
+        set_occupied_space(elem, lsblk_with_pvs, mounted)
+        
         if elem['type'] != 'lvm':
             utils.set_label(elem)
 
@@ -50,7 +54,7 @@ def get_lsblk_elements(pvs):
 def process_block_devices(devices, keys):     
     """Sets and modifies some values of keys.
     """
-    
+        
     for device in devices:
         
         # Remove name of the key from value.
@@ -62,6 +66,7 @@ def process_block_devices(devices, keys):
         device['uuid'] = ''.join([device['name'], '@', device['uuid']])
         
         device['size'] = int(device['size'])
+        
         device['parents'] = []
         device['children'] = []
         
@@ -70,12 +75,6 @@ def process_block_devices(devices, keys):
         else:
             device['encrypted'] = False
         
-        mounted = get_mounted()
-        if device['mountpoint'] and device['mountpoint'] in mounted.keys():
-            device['fsoccupied'] = mounted[device['mountpoint']]
-        else:
-            device['fsoccupied'] = -1
-
 
 def get_mounted():
     """Returns dictionary with mounted file systems.
@@ -90,6 +89,7 @@ def get_mounted():
     mounted = {}
     
     for s in strings:
+        
         mount_point = s.split()[-1]
         occupied = float(s.split()[-2][:-1])
         mounted[mount_point] = occupied
@@ -97,6 +97,16 @@ def get_mounted():
     return mounted
 
 
+def set_occupied_space(device, devices, mounted):
+    """Sets parameter 'occupied'.
+    """
+
+    if device['mountpoint'] and device['mountpoint'] in mounted.keys():
+        device['occupied'] = mounted[device['mountpoint']]
+    else:
+        device['occupied'] = -1
+
+    
 def build_dependency_tree(devices, pvs):
     """Connects lsblk elements into a dependency tree.
     """
@@ -123,6 +133,7 @@ def add_crypt_to_chidren(devices):
     """
     
     for i,device in enumerate(devices):
+        
         if device['type'] == 'crypt':
             parent = devices[i-1]
             utils.connect(parent, device)
@@ -177,7 +188,8 @@ def add_raid_to_children(devices):
      
     rev_devices = reversed(devices)
     
-    for device in rev_devices:                    
+    for device in rev_devices:  
+                          
         if device['type'].startswith('raid'):
             parent = next(rev_devices)
             utils.connect(parent, device)
@@ -275,6 +287,7 @@ def add_pvs_on_lvs(device, pvs):
     """
     
     for pv in pvs:
+        
         if pv['name'].count('/') > 2:
                                 
             pv_name = pv['name'].replace('-','--')
@@ -297,17 +310,18 @@ def skip_encryption(elements):
     encryptions = []
     
     for elem in elements:
+        
         if elem['encrypted'] and elem['children']:
             crypt = utils.get_by_uuid(elem['children'][0],copy_elems)
             
             elem['mountpoint'] = crypt['mountpoint']
             elem['fstype'] = crypt['fstype']
             elem['children'] = crypt['children']
-            elem['fsoccupied'] = crypt['fsoccupied']
             
             encryptions.append(crypt['uuid'])
             
             for child_uuid in elem['children']:
+                
                 child = utils.get_by_uuid(child_uuid, elements)
                 child['parents'].remove(crypt['uuid'])
                 child['parents'].append(elem['uuid'])

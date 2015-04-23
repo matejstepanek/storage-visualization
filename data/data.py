@@ -83,6 +83,7 @@ class Elements:
         """
         
         for vg in vgs:
+            
             if vg['name'] == pv['vg_name']:
                 utils.connect(pv, vg)
                 break
@@ -93,6 +94,7 @@ class Elements:
         """
         
         for lv in lvs:
+            
             if thinlv['pool_lv'] == lv['name']:
                 utils.connect(lv, thinlv)
                 break
@@ -103,6 +105,7 @@ class Elements:
         """
         
         for vg in vgs:
+            
             if lv['vg_name'] == vg['name']:
                 utils.connect(vg, lv)
                 break

@@ -64,20 +64,32 @@ class Rectangle(Gtk.Button):
             self.color_box.set_shadow_type(Gtk.ShadowType.NONE)
             vbox.pack_start(self.color_box, False, False, 0)
         
-        # free space progress bar for vgs
-        if elem['type'] == 'vg':
-            occupied = (1 - (float(elem['vg_free']) / elem['size'])) * 100
-            progress_bar = self.get_progress_bar(occupied)
+        # free space progress bar
+        if elem['occupied'] >= 0:
+            progress_bar = self.get_progress_bar(elem['occupied'])
             vbox.pack_start(progress_bar, False, False, 0)
-        # free space progress bar for snapshots, thin pools and thin LVs
-        elif elem['type'] == 'lv' and elem['data_percent'] >= 0:
-            progress_bar = self.get_progress_bar(elem['data_percent'])
-            vbox.pack_end(progress_bar, False, False, 0)
-        # free space progress bar for mounted file systems
-        elif elem['mountpoint'] and elem['fsoccupied'] >= 0:
-            progress_bar = self.get_progress_bar(elem['fsoccupied'])
-            vbox.pack_end(progress_bar, False, False, 0)
-            
+        
+#         # free space progress bar for vgs
+#         if elem['type'] == 'vg':
+#             occupied = (1 - (float(elem['vg_free']) / elem['size'])) * 100
+#             progress_bar = self.get_progress_bar(occupied)
+#             vbox.pack_start(progress_bar, False, False, 0)
+#         # free space progress bar for snapshots, thin pools and thin LVs
+#         elif elem['type'] == 'lv' and elem['data_percent'] >= 0:
+#             progress_bar = self.get_progress_bar(elem['data_percent'])
+#             vbox.pack_end(progress_bar, False, False, 0)
+#         # free space progress bar for mounted file systems
+#         elif elem['mountpoint'] and elem['fsoccupied'] >= 0:
+#             progress_bar = self.get_progress_bar(elem['fsoccupied'])
+#             vbox.pack_end(progress_bar, False, False, 0)
+#         # free space progress bar for disks and loop devices
+#         elif elem['type'] in ['disk', 'loop'] and elem['children']:
+#             occupied = 0
+#             for child_uuid in elem['children']:
+#                 child = get_by_uuid(child_uuid, all_elems)
+#                 if not child or child['type'] != 'part':
+#                     break
+
         self.connect('button-press-event', self.on_button_press)
 
       
@@ -255,6 +267,10 @@ class Rectangle(Gtk.Button):
         cond2 = elem['type'].startswith('raid')
         if elem['type'] in ['disk', 'loop', 'part', 'lv', 'vg', 'pv'] or cond2:
             if elem['label']['type']['short'] == 'Cache pool':
+                pass
+            elif elem['label']['type']['short'].startswith('Thin pool'):
+                pass
+            elif elem['label']['type']['short'] == 'VG':
                 pass
             elif elem['fstype'].startswith('LVM'):
                 icon_name = 'pv'
