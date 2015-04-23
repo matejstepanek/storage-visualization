@@ -141,7 +141,7 @@ class TreePanel(Gtk.Box):
         icons = self.get_icons()
         icon = icons['free']
                 
-        if elem['label']['type']['short'] == 'Cache pool':
+        if elem['label']['type']['short'] == 'Cache':
             icon = None
         elif elem['label']['type']['short'].startswith('Thin pool'):
             icon = None

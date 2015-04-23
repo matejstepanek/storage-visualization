@@ -195,7 +195,8 @@ def add_lsblk_info(lv, lsblk_equivalent, pvs):
     for pv_uuid in lsblk_equivalent['children']:
         
         pv = utils.get_by_uuid(pv_uuid, pvs)
-        pv['parents'] = [lv['uuid']]
+        if pv:
+            pv['parents'] = [lv['uuid']]
 
 
 def tag_origins(lvs):
@@ -221,5 +222,6 @@ def add_cache_pool_to_standard(lv, internal, standard):
     """
     
     cache_pool = utils.get_by_name(lv['pool_lv'], internal)
-    standard.append(cache_pool)
-    
+    if cache_pool:
+        standard.append(cache_pool)
+

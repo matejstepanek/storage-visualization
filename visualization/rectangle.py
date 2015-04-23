@@ -266,7 +266,7 @@ class Rectangle(Gtk.Button):
         
         cond2 = elem['type'].startswith('raid')
         if elem['type'] in ['disk', 'loop', 'part', 'lv', 'vg', 'pv'] or cond2:
-            if elem['label']['type']['short'] == 'Cache pool':
+            if elem['label']['type']['short'] == 'Cache':
                 pass
             elif elem['label']['type']['short'].startswith('Thin pool'):
                 pass

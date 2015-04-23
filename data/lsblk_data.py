@@ -18,7 +18,7 @@ def get_lsblk_elements(pvs):
     - lsblk_with_pvs - list of lsblk elements (devices) connected with pvs  
     - lsblk_lvm      - list of lsblk elements (devices) of lvm type  
     
-    Each item in the list is a dictionary with these keys: 
+    Each item in the list is a dictionary with these keys:
     uuid, name, type, mountpoint, fstype, size, occupied, parents, children,
     encrypted, label.
     
@@ -214,7 +214,8 @@ def merge_raid_devices(devices):
                     for parent_uuid in raid2['parents']:
                         
                         parent = utils.get_by_uuid(parent_uuid, devices)
-                        utils.connect(parent, raid)
+                        if parent:
+                            utils.connect(parent, raid)
             
             result.append(raid)
             checked.append(raid['uuid'])
@@ -314,17 +315,19 @@ def skip_encryption(elements):
         if elem['encrypted'] and elem['children']:
             crypt = utils.get_by_uuid(elem['children'][0],copy_elems)
             
-            elem['mountpoint'] = crypt['mountpoint']
-            elem['fstype'] = crypt['fstype']
-            elem['children'] = crypt['children']
-            
-            encryptions.append(crypt['uuid'])
-            
-            for child_uuid in elem['children']:
+            if crypt:
+                elem['mountpoint'] = crypt['mountpoint']
+                elem['fstype'] = crypt['fstype']
+                elem['children'] = crypt['children']
                 
-                child = utils.get_by_uuid(child_uuid, elements)
-                child['parents'].remove(crypt['uuid'])
-                child['parents'].append(elem['uuid'])
+                encryptions.append(crypt['uuid'])
+                
+                for child_uuid in elem['children']:
+                    
+                    child = utils.get_by_uuid(child_uuid, elements)
+                    if child:    
+                        child['parents'].remove(crypt['uuid'])
+                        child['parents'].append(elem['uuid'])
                 
         elif elem['encrypted']:
             elem['fstype'] = ''
