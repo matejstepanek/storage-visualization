@@ -58,8 +58,11 @@ class MainWindow(Gtk.Window):
                                  elems.lvs, elems.disks_loops)
         scrolled_scheme_window.add(self.scheme_box)        
 
+        centering = Gtk.Alignment(xalign=0.5)
+        scrolled_info_window.add(centering)
+        
         self.info_box = InfoBox(elems.all_elems)
-        scrolled_info_window.add(self.info_box)
+        centering.add(self.info_box)
         
         
         self.show_all()
