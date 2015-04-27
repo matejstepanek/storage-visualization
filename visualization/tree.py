@@ -9,194 +9,148 @@ Displaying storage elements in dependency trees.
 from gi.repository import Gtk, GdkPixbuf   #@UnresolvedImport
 
 from data.utils import get_by_uuid
+from icons import Icons
 
-FS_TYPES = ['ext3', 'ext4', 'vfat', 'ntfs', 'btrfs', 'xfs']
 
-
-class TreePanel(Gtk.Box): 
-    """Panel with tree structure of storage elements.
-    """      
+class TreeBox(Gtk.Box):
+    """Box with tree structure of storage elements.
+    """
     
-    def __init__(self, window, all_elems, vgs, lvs, disks_loops):
+    def __init__(self, main_window, all_elements, disks_loops, vgs):
         
-        self.window = window
-        self.all_elems = all_elems
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
         
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL,
-                          width_request=200)                                      
-        # Disk tree        
-        store_disks = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str)
-        self.populate_store(store_disks, all_elems, disks_loops, 'name')
-        view_disks = TreeView(store_disks, all_elems, self.window)
-        view_disks.set_headers_visible(False)
-#         view_disks.expand_all()
-        view_disks.set_enable_tree_lines(True)
+        self.icons = Icons(all_elements)
+        mountpoints = self.get_mountpoints(all_elements)
         
-        renderer_pixbuf = Gtk.CellRendererPixbuf()
-        column_pixbuf = Gtk.TreeViewColumn('', renderer_pixbuf, pixbuf=0)
-        view_disks.append_column(column_pixbuf)
-        
-        renderer_text = Gtk.CellRendererText()
-        column_text = Gtk.TreeViewColumn('Disks', renderer_text, text=1)
-        view_disks.append_column(column_text)
-              
-        scrolled_window_view_disks = Gtk.ScrolledWindow()
-        scrolled_window_view_disks.add(view_disks)
-        
-        # VG tree
-        store_vgs = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str)
-        self.populate_store(store_vgs, all_elems, vgs, 'name')
-        view_vgs = TreeView(store_vgs, all_elems, self.window)
-        view_vgs.set_headers_visible(False)
-#         view_vgs.expand_all()
-        view_vgs.set_enable_tree_lines(True)
-                
-        renderer_pixbuf = Gtk.CellRendererPixbuf()
-        column_pixbuf = Gtk.TreeViewColumn('', renderer_pixbuf, pixbuf=0)
-        view_vgs.append_column(column_pixbuf)
-        
-        renderer_text = Gtk.CellRendererText()
-        column_text = Gtk.TreeViewColumn('Volume groups', renderer_text, text=1)        
-        view_vgs.append_column(column_text)
-        
-        scrolled_window_view_vgs = Gtk.ScrolledWindow()
-        scrolled_window_view_vgs.add(view_vgs)
-        
-        # mountpoints tree
-        mpoints = []
-        for elem in all_elems:
-            if elem['mountpoint']:
-                mpoints.append(elem)
-        
-        store_mountpoints = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str)
-        self.populate_store(store_mountpoints, all_elems, mpoints, 'mountpoint')
-        view_mountpoints = TreeView(store_mountpoints, all_elems, self.window)
-        view_mountpoints.set_headers_visible(False)
-#         view_mountpoints.expand_all()
-        view_mountpoints.set_enable_tree_lines(True)
-                
-        renderer_pixbuf = Gtk.CellRendererPixbuf()
-        column_pixbuf = Gtk.TreeViewColumn('', renderer_pixbuf, pixbuf=0)
-        view_mountpoints.append_column(column_pixbuf)
-        
-        renderer_text = Gtk.CellRendererText()
-        column_text = Gtk.TreeViewColumn('Mount points', renderer_text, text=1)        
-        view_mountpoints.append_column(column_text)
-        
-        scrolled_window_view_mountpoints = Gtk.ScrolledWindow()
-        scrolled_window_view_mountpoints.add(view_mountpoints)
-        
-        # Sets the stack and his switcher.
         stack = Gtk.Stack()
         
-        stack.add_titled(scrolled_window_view_disks, 'disks', 'Disks')        
-        stack.add_titled(scrolled_window_view_vgs, 'vgs', 'Volume groups')
-        stack.add_titled(scrolled_window_view_mountpoints, 'mountpoints', 'Mount points')
-
+        store_disks = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str)
+        self.populate_store(store_disks, disks_loops, all_elements, 'name')
+        view_disks = self.get_tree_view(store_disks, all_elements, main_window)
+        stack.add_titled(view_disks, 'disks', 'Disks')
+        
+        store_vgs = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str)
+        self.populate_store(store_vgs, vgs, all_elements, 'name')
+        view_vgs = self.get_tree_view(store_vgs, all_elements, main_window)
+        stack.add_titled(view_vgs, 'vgs', 'Volume groups')
+        
+        store_mountpoints = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str)
+        self.populate_store(store_mountpoints, mountpoints, all_elements, 'mountpoint')
+        view_mountpoints = self.get_tree_view(store_mountpoints, all_elements, main_window)
+        stack.add_titled(view_mountpoints, 'mountpoints', 'Mount points')
         
         stack_switcher = Gtk.StackSwitcher(stack=stack)
-        
         self.pack_start(stack_switcher, False, True, 0)
         self.pack_start(stack, True, True, 0)
-
-
-    def populate_store(self, store, elements, roots, info):
-        """Populates tree store with data.
         
-        Roots are added at first. And then 2 more layers. That is enough
-        for disk trees and vgs trees both.
+        
+    def get_mountpoints(self, all_elements):
+        """Returns storage elements with mounted file systems.
         """
         
-        for elem1 in roots:            
-            parent_row2 = self.append_row(elem1, store, None, info)                        
-            for elem2_uuid in elem1['children']:              
+        mountpoints = []
+        
+        for elem in all_elements:
+            if elem['mountpoint']:
+                mountpoints.append(elem)
+            
+        return mountpoints
+
+    
+    def populate_store(self, store, roots, elements, info):
+        """Populates tree store with data.
+        
+        Roots are added at first. And then 3 more layers.
+        """
+        
+        for elem1 in roots:
+            
+            parent_row1 = self.append_row(elem1, store, None, info)                        
+            
+            
+            for elem2_uuid in elem1['children']:
+                
                 elem2 = get_by_uuid(elem2_uuid, elements)
-                if elem2['type'] == 'pv':
-                    break  
-                parent_row3 = self.append_row(elem2, store, parent_row2, info)                                                  
+                if elem2 and elem2['type'] != 'pv':
+                    parent_row2 = self.append_row(elem2, store, parent_row1, info)
+                else:
+                    break
+                
+                
                 for elem3_uuid in elem2['children']:
+                    
                     elem3 = get_by_uuid(elem3_uuid, elements)
-                    if elem3['type'] == 'pv':
-                        break 
-                    parent_row4 = self.append_row(elem3, store, parent_row3, info)                        
+                    if elem3 and elem3['type'] != 'pv':
+                        parent_row3 = self.append_row(elem3, store, parent_row2, info)
+                    else:
+                        break
+                    
+                    
                     for elem4_uuid in elem3['children']:
+                        
                         elem4 = get_by_uuid(elem4_uuid, elements)
-                        if elem4['type'] == 'pv':
+                        if elem4 and elem4['type'] != 'pv':                        
+                            self.append_row(elem4, store, parent_row3, info)
+                        else:
                             break
-                        self.append_row(elem4, store, parent_row4, info)  
 
 
-    def append_row(self, elem, store, parent_row, info): 
-        """Appends row with given element.
-        """        
-        icon = self.assign_icon(elem)
-        text = elem[info]
-        new_parent_row = store.append(parent_row,[icon, text, elem['uuid']])
+    def append_row(self, element, store, parent_row, info): 
+        """Appends row with a given element.
+        """
+        
+        icon = self.icons.assign_icon(element)
+        
+        text = element[info]
+        new_parent_row = store.append(parent_row,[icon, text, element['uuid']])
+        
         return new_parent_row
 
 
-    def assign_icon(self, elem):
-        """Returns appropriate icon for element to display in the tree view.
+    def get_tree_view(self, tree_store, all_elements, main_window):
+        """Returns tree view based on the given tree store.
         """
-        icons = self.get_icons()
-        icon = icons['free']
-                
-        if elem['label']['type']['short'] == 'Cache':
-            icon = None
-        elif elem['label']['type']['short'].startswith('Thin pool'):
-            icon = None
-        elif elem['label']['type']['short'] == 'VG':    
-            icon = None
-        elif elem['children']:
-            child = get_by_uuid(elem['children'][0], self.all_elems)
-            if child['type'] == 'pv':
-                icon = icons['pv'] 
-            else:
-                icon = None
-                
-        if elem['mountpoint']:
-            icon = icons['mount']
-        elif elem['fstype'] in FS_TYPES:
-            icon = icons['fs']
-            
-        if elem['fstype'].startswith('LVM'):
-            icon = icons['pv']       
         
-        return icon
-
-
-    def get_icons(self):
-        """Returns dictionary of icons to use in the tree view.
-        """
-        pixbuf = GdkPixbuf.Pixbuf()
-        dict_icons = {}
-        dict_icons['free'] = pixbuf.new_from_file_at_size('graphics/free.png', 10, 10)
-        dict_icons['pv'] = pixbuf.new_from_file_at_size('graphics/pv.png', 10, 10)
-        dict_icons['mount'] = pixbuf.new_from_file_at_size('graphics/mount.png', 10, 10)
-        dict_icons['fs'] = pixbuf.new_from_file_at_size('graphics/fs.jpg', 9, 9)
-        return dict_icons
+        tree_view = TreeView(tree_store, all_elements, main_window)
+        tree_view.set_headers_visible(False)
+        tree_view.set_enable_tree_lines(True)
+        
+        renderer_pixbuf = Gtk.CellRendererPixbuf()
+        column_pixbuf = Gtk.TreeViewColumn('', renderer_pixbuf, pixbuf=0)
+        tree_view.append_column(column_pixbuf)
+        
+        renderer_text = Gtk.CellRendererText()
+        column_text = Gtk.TreeViewColumn('', renderer_text, text=1)
+        tree_view.append_column(column_text)
+              
+        scrolled_window_view = Gtk.ScrolledWindow()
+        scrolled_window_view.add(tree_view)
+        
+        return scrolled_window_view
 
 
 class TreeView(Gtk.TreeView): 
     
-    def __init__(self, tree_store, all_elems, window):
-        
-        self.window = window
-        self.all_elems = all_elems
+    def __init__(self, tree_store, all_elements, main_window):
         
         Gtk.TreeView.__init__(self, tree_store)
+        
+        self.all_elements = all_elements
+        self.main_window = main_window
+        
         self.connect('row_activated', self.on_row_activated)
         self.set_activate_on_single_click(True)
         
 
     def on_row_activated(self, widget, path, column):
+        
         tree_store = self.get_model()
         it = tree_store.get_iter(path)
         elem_id = tree_store.get_value(it,2)
         
-        self.window.info_box.__init__(self.all_elems, elem_id)
+        self.main_window.info_box.__init__(self.all_elements, elem_id)
         
-        self.window.scheme_box.rectangle[elem_id].emit('focus', False)
+        self.main_window.scheme_box.rectangle[elem_id].emit('focus', False)
         
-
     

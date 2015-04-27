@@ -307,13 +307,13 @@ def skip_encryption(elements):
     (mountpoint, fstype, ...) are given to the parent element.
     """
     
-    copy_elems = list(elements)
+    copy_elements = list(elements)
     encryptions = []
     
     for elem in elements:
         
         if elem['encrypted'] and elem['children']:
-            crypt = utils.get_by_uuid(elem['children'][0],copy_elems)
+            crypt = utils.get_by_uuid(elem['children'][0],copy_elements)
             
             if crypt:
                 elem['mountpoint'] = crypt['mountpoint']

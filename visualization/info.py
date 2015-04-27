@@ -26,6 +26,7 @@ class InfoBox(Gtk.Box):
         elem = get_by_uuid(uuid,all_elements)
 
         if elem:
+            
             vbox_keys = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
             self.pack_start(vbox_keys, False, True, 0)
 

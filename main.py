@@ -9,9 +9,9 @@ Displaying storage layers in GUI.
 from gi.repository import Gtk, Gdk   #@UnresolvedImport
 
 from data.data import Elements
-from visualization.scheme import Scheme
-from visualization.info_box import InfoBox
-from visualization.tree_panel import TreePanel
+from visualization.scheme import SchemeBox
+from visualization.info import InfoBox
+from visualization.tree import TreeBox
 
 
 class MainWindow(Gtk.Window):
@@ -37,31 +37,30 @@ class MainWindow(Gtk.Window):
         self.add(paned)
 
 
-        left_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        paned.pack1(left_box, True, True)
+        main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        paned.pack1(main_box, True, True)
 
-        panel = TreePanel(self, elems.all_elems, elems.vgs, elems.lvs,
-                          elems.disks_loops)
-        paned.pack2(panel, False, True)
+        tree_box = TreeBox(self, elems.all_elements, elems.disks_loops, elems.vgs)
+        paned.pack2(tree_box, False, True)
 
 
         scrolled_scheme_window = Gtk.ScrolledWindow()
         scrolled_scheme_window.set_name('White')
-        left_box.pack_start(scrolled_scheme_window, True, True, 0)
+        main_box.pack_start(scrolled_scheme_window, True, True, 0)
         
         scrolled_info_window = Gtk.ScrolledWindow(height_request=110,
                                     vscrollbar_policy=Gtk.PolicyType.NEVER)
-        left_box.pack_start(scrolled_info_window, False, False, 0)
+        main_box.pack_start(scrolled_info_window, False, False, 0)
         
         
-        self.scheme_box = Scheme(self, elems.all_elems, elems.pvs, elems.vgs,
+        self.scheme_box = SchemeBox(self, elems.all_elements, elems.pvs, elems.vgs,
                                  elems.lvs, elems.disks_loops)
         scrolled_scheme_window.add(self.scheme_box)        
 
         centering = Gtk.Alignment(xalign=0.5)
         scrolled_info_window.add(centering)
         
-        self.info_box = InfoBox(elems.all_elems)
+        self.info_box = InfoBox(elems.all_elements)
         centering.add(self.info_box)
         
         

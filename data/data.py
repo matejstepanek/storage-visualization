@@ -37,14 +37,14 @@ class Elements:
         
         self.set_dependencies_lvm(self.pvs, self.vgs, self.lvs)
         
-        self.all_elems = lsblk_no_lvs + self.vgs + self.lvs
+        self.all_elements = lsblk_no_lvs + self.vgs + self.lvs
         self.disks_loops = [d for d in lsblk_no_lvs if d['type'] in ['disk', 'loop']]
 
 
     def separate_lvs(self, lsblk):
         """Divides lsblk elements into 2 lists: 
             1) disk, loops, partitions, md raids, pvs
-            2) lvm devices (= logical volumes) 
+            2) lvm devices (= logical volumes)
         """
         
         lsblk_lvm = []
@@ -113,10 +113,10 @@ class Elements:
 
 #################################### TESTING ###################################
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     data = Elements()
     print '-------------------------------------------------'
-    for x in data.all_elems:
+    for x in data.all_elements:
         print x['name'], x
 
         

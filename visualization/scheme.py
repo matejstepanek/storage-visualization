@@ -19,7 +19,7 @@ H_GAP_SMALL = 4
 H_GAP_BIG = 15
 
 
-class Scheme(Gtk.Box):
+class SchemeBox(Gtk.Box):
     """Scheme of storage layers with information box.
     
     Structure of scheme:
@@ -49,7 +49,7 @@ class Scheme(Gtk.Box):
                     - pv rectangles
     """
     
-    def __init__(self, window, all_elems, pvs, vgs, lvs, disks_loops):
+    def __init__(self, window, all_elements, pvs, vgs, lvs, disks_loops):
         
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL,
                          margin_top=40, margin_bottom=40,
@@ -57,7 +57,7 @@ class Scheme(Gtk.Box):
                          halign=Gtk.Align.CENTER)
         
         self.window = window
-        self.all_elems = all_elems
+        self.all_elements = all_elements
         
         self.rectangle = {}
         
@@ -84,7 +84,7 @@ class Scheme(Gtk.Box):
             disk_box.add(part_rows)
             
             for elem_uuid in disk['children']:
-                elem = get_by_uuid(elem_uuid, all_elems)
+                elem = get_by_uuid(elem_uuid, all_elements)
                 if elem['type'] == 'pv':
                     break
                 elif elem['type'] == 'part':
@@ -102,7 +102,7 @@ class Scheme(Gtk.Box):
                         md_raids_added.append(elem['uuid'])
                 # md raids        
                 for elem2_uuid in elem['children']:
-                    elem2 = get_by_uuid(elem2_uuid, all_elems)
+                    elem2 = get_by_uuid(elem2_uuid, all_elements)
                     if elem2['type'] == 'pv':
                         break
                     elif not md_raid_present:  
@@ -230,7 +230,7 @@ class Scheme(Gtk.Box):
 #                                     vscrollbar_policy=Gtk.PolicyType.NEVER)
 #         self.box.pack_start(scrolled_window_info, False, False, 0)
 #         
-#         self.info_box = info_box.InfoBox(all_elems)
+#         self.info_box = info_box.InfoBox(all_elements)
 #         scrolled_window_info.add(self.info_box)
         self.show_all()
 
@@ -238,7 +238,7 @@ class Scheme(Gtk.Box):
     def add_rectangle(self, elem, box, expand_fill=False):
         """Adds rectangle to given box.
         """
-        self.rectangle[elem['uuid']] = rectangle.Rectangle(elem, self.all_elems, self.window)
+        self.rectangle[elem['uuid']] = rectangle.Rectangle(elem, self.all_elements, self.window)
         
         self.rectangle[elem['uuid']].set_name(elem['uuid'])
         

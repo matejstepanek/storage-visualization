@@ -76,7 +76,7 @@ def set_label_size(elem):
     elem['label']['size'] = make_readable(elem['size'])
     
     if elem['occupied'] >= 0:
-#         print elem['name'], elem['occupied']
+
         free = elem['size'] * (1 - elem['occupied']/100)
         
         elem['label']['size'] += ' - %s available (%.1f %% occupied)' %(
