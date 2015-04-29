@@ -61,39 +61,14 @@ class TreeBox(Gtk.Box):
     def populate_store(self, store, roots, elements, info):
         """Populates tree store with data.
         
-        Roots are added at first. And then 3 more layers.
+        Roots are added at first and then other layers.
         """
         
-        for elem1 in roots:
+        for root in roots:
             
-            parent_row1 = self.append_row(elem1, store, None, info)                        
+            parent_row = self.append_row(root, store, None, info)
             
-            
-            for elem2_uuid in elem1['children']:
-                
-                elem2 = get_by_uuid(elem2_uuid, elements)
-                if elem2 and elem2['type'] != 'pv':
-                    parent_row2 = self.append_row(elem2, store, parent_row1, info)
-                else:
-                    break
-                
-                
-                for elem3_uuid in elem2['children']:
-                    
-                    elem3 = get_by_uuid(elem3_uuid, elements)
-                    if elem3 and elem3['type'] != 'pv':
-                        parent_row3 = self.append_row(elem3, store, parent_row2, info)
-                    else:
-                        break
-                    
-                    
-                    for elem4_uuid in elem3['children']:
-                        
-                        elem4 = get_by_uuid(elem4_uuid, elements)
-                        if elem4 and elem4['type'] != 'pv':                        
-                            self.append_row(elem4, store, parent_row3, info)
-                        else:
-                            break
+            self.recursively_append_children(root, elements, store, parent_row, info)
 
 
     def append_row(self, element, store, parent_row, info): 
@@ -106,7 +81,23 @@ class TreeBox(Gtk.Box):
         new_parent_row = store.append(parent_row,[icon, text, element['uuid']])
         
         return new_parent_row
-
+        
+    
+    def recursively_append_children(self, parent, elements, store, parent_row, info):
+        """Appends all children of a given parent element.
+        """
+        
+        for child_uuid in parent['children']:
+                
+                child = get_by_uuid(child_uuid, elements)
+                if child and child['type'] != 'pv':
+                    new_parent_row = self.append_row(child, store, parent_row, info)
+                else:
+                    break
+                
+                self.recursively_append_children(child, elements, store,
+                                                 new_parent_row, info)
+    
 
     def get_tree_view(self, tree_store, all_elements, main_window):
         """Returns tree view based on the given tree store.
@@ -153,4 +144,4 @@ class TreeView(Gtk.TreeView):
         
         self.main_window.scheme_box.rectangle[elem_id].emit('focus', False)
         
-    
+        
