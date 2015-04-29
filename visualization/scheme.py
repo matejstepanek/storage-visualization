@@ -11,8 +11,6 @@ from gi.repository import Gtk, GdkPixbuf #@UnresolvedImport
 from data.utils import get_by_uuid, get_by_name
 import rectangle
 
-MIN_WIDTH = 110
-MAX_WIDTH = 500
 V_GAP_SMALL = 4
 V_GAP_BIG = 10
 H_GAP_SMALL = 4
@@ -225,20 +223,15 @@ class SchemeBox(Gtk.Box):
             else:
                 self.add_rectangle(pv, pv_rows['@no vg'])
                 
-        ################ INFO BOX ##############################################                                    
-#         scrolled_window_info = Gtk.ScrolledWindow(height_request=90,
-#                                     vscrollbar_policy=Gtk.PolicyType.NEVER)
-#         self.box.pack_start(scrolled_window_info, False, False, 0)
-#         
-#         self.info_box = info_box.InfoBox(all_elements)
-#         scrolled_window_info.add(self.info_box)
+                
         self.show_all()
 
 
     def add_rectangle(self, elem, box, expand_fill=False):
         """Adds rectangle to given box.
         """
-        self.rectangle[elem['uuid']] = rectangle.Rectangle(elem, self.all_elements, self.window)
+        self.rectangle[elem['uuid']] = rectangle.Rectangle(elem, self.all_elements,
+                                                           self.window)
         
         self.rectangle[elem['uuid']].set_name(elem['uuid'])
         

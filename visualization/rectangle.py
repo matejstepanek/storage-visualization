@@ -6,12 +6,12 @@ Created: 2015
 Rectangle representing one storage element.
 '''
 
-from gi.repository import Gtk, Pango, Gdk, GdkPixbuf #@UnresolvedImport
+from gi.repository import Gtk, Pango, Gdk #@UnresolvedImport
 import subprocess
 
+from icons import Icons
 from data.utils import get_by_uuid
 
-FS_TYPES = ['ext3', 'ext4', 'vfat', 'ntfs', 'btrfs', 'xfs']
 MIN_WIDTH = 110
 MAX_WIDTH = 500
 
@@ -22,20 +22,21 @@ class Rectangle(Gtk.Button):
     
     __gtype_name__ = 'Rectangle'
     
-    def __init__(self, elem, all_elements, window):
+    def __init__(self, element, all_elements, main_window):
         """Initiates rectangle with appropriate size, icons and label.
         """
         
-        self.window = window
         self.all_elements = all_elements
-        width = self.get_width(elem)
+        self.main_window = main_window
+        
+        width = self.get_width(element)
         
         Gtk.Button.__init__(self, width_request = width, height_request=50)
    
-        if elem['type'] == 'lv':
+        if element['type'] == 'lv':
             self.set_size_request(width, 60)
             
-        self.uuid = elem['uuid']
+        self.uuid = element['uuid']
          
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5,
                        margin_top=2, margin_bottom=2)
@@ -48,70 +49,110 @@ class Rectangle(Gtk.Button):
                                  width_request=9)
         hbox.pack_start(self.left_vbox, False, False, 0)
             
-        label = self.get_label(elem)
+        label = self.get_label(element)
         hbox.pack_start(label, True, True, 0)
         
         self.right_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         hbox.pack_start(self.right_vbox, False, False, 0)
         
-        icons = self.get_icons()
-        self.add_left_icons(elem, icons, self.left_vbox)
-        self.add_right_icons(elem, icons, self.right_vbox)
+        icons = Icons(self.all_elements)
+        self.add_left_icons(element, icons, self.left_vbox)
+        self.add_right_icons(element, icons, self.right_vbox)
         
-        # color box for snapshots and their origins
-        if elem['type'] == 'lv' and (elem['is_origin'] or (elem['origin'] and elem['segtype'] != 'cache')):
-            self.color_box = Gtk.Frame(height_request=6)
-            self.color_box.set_shadow_type(Gtk.ShadowType.NONE)
-            vbox.pack_start(self.color_box, False, False, 0)
+        if element['type'] == 'lv' and (element['is_origin'] or (element['origin'] and element['segtype'] != 'cache')):
+            self.set_color_box(vbox)
         
-        # free space progress bar
-        if elem['occupied'] >= 0:
-            progress_bar = self.get_progress_bar(elem['occupied'])
-            vbox.pack_start(progress_bar, False, False, 0)
-        
-#         # free space progress bar for vgs
-#         if elem['type'] == 'vg':
-#             occupied = (1 - (float(elem['vg_free']) / elem['size'])) * 100
-#             progress_bar = self.get_progress_bar(occupied)
-#             vbox.pack_start(progress_bar, False, False, 0)
-#         # free space progress bar for snapshots, thin pools and thin LVs
-#         elif elem['type'] == 'lv' and elem['data_percent'] >= 0:
-#             progress_bar = self.get_progress_bar(elem['data_percent'])
-#             vbox.pack_end(progress_bar, False, False, 0)
-#         # free space progress bar for mounted file systems
-#         elif elem['mountpoint'] and elem['fsoccupied'] >= 0:
-#             progress_bar = self.get_progress_bar(elem['fsoccupied'])
-#             vbox.pack_end(progress_bar, False, False, 0)
-#         # free space progress bar for disks and loop devices
-#         elif elem['type'] in ['disk', 'loop'] and elem['children']:
-#             occupied = 0
-#             for child_uuid in elem['children']:
-#                 child = get_by_uuid(child_uuid, all_elements)
-#                 if not child or child['type'] != 'part':
-#                     break
+        if element['occupied'] >= 0:
+            self.set_progress_bar(element['occupied'], vbox)
 
         self.connect('button-press-event', self.on_button_press)
+    
+    
+    def get_width(self, element):
+        """Returns width of the rectangle in pixels.
+        
+        I don't want too wide disks. VG is ok, cause its width depends on
+        its logical volumes.
+        """
 
-      
-    def menu_press_1(self, widget, event):
+        giga_size = int(round(element['size'] / 1000000000.0))
         
-        subprocess.check_output(['sudo', 'pvcreate', '/dev/loop3'])
-        self.window.paned.destroy()
-        self.window.__init__()
-        
+        if giga_size < MIN_WIDTH:
+            width = MIN_WIDTH
+            
+        elif giga_size > MAX_WIDTH and element['type'] != 'vg':
+            width = MAX_WIDTH
+            
+        else:
+            width = giga_size
+            
+        return width
 
-    def menu_press_2(self, widget, event):
+    
+    def get_label(self, element):
+        """Returns appropriate label for a given element.
+        """
         
-        subprocess.check_output(['sudo', 'vgextend', 'alpha', '/dev/loop3'])
-        self.window.paned.destroy()
-        self.window.__init__()
+        markup = '<b>%s</b>\n<small>%s</small>' %(element['label']['name'],
+                                                  element['label']['type']['short'])
+        label = Gtk.Label(justify=Gtk.Justification.CENTER, max_width_chars=5,                          
+                        ellipsize=Pango.EllipsizeMode.END)
+        label.set_markup(markup)
+        
+        return label
+    
+
+    def add_left_icons(self, elem, icons, box):
+        """Adds appropriate icons to the top left corner of the rectangle.
+        """
+        
+        icon = icons.assign_icon(elem)
+            
+        if icon:
+            image = Gtk.Image.new_from_pixbuf(icon)        
+            box.pack_start(image, False, False, 0)
+            
+        if elem['encrypted']:
+            image_crypt = Gtk.Image.new_from_pixbuf(icons.crypt)
+            box.pack_start(image_crypt, False, False, 0)
+            
+
+    def add_right_icons(self, element, icons, box):
+        """Adds appropriate icons to the top right corner of the rectangle.
+        """
+        
+        image_menu = Gtk.Image.new_from_pixbuf(icons.menu)
+        box.pack_start(image_menu, False, False, 0)
+        
+    
+    def set_color_box(self, vbox):
+        """Adds a color box for highlighting snapshots and their origins.
+        """
+        
+        self.color_box = Gtk.Frame(height_request=6)
+        self.color_box.set_shadow_type(Gtk.ShadowType.NONE)
+        vbox.pack_start(self.color_box, False, False, 0)
+    
+    
+    def set_progress_bar(self, occupied, vbox):
+        """Returns progress bar that shows amount of the occupied space.
+        """
+        
+        text = '%.0f %% occupied' % occupied
+        
+        progress_bar = Gtk.ProgressBar()
+        progress_bar.set_fraction(occupied/100)
+        progress_bar.set_text(text)
+        progress_bar.set_show_text(True)
+        
+        vbox.pack_start(progress_bar, False, False, 0)
     
 
     def on_button_press(self, widget, event):
 
-        elem = get_by_uuid(self.uuid, self.all_elements)
+        element = get_by_uuid(self.uuid, self.all_elements)
         if event.button == 3:
-            if elem['name'] == 'loop3' and elem['type'] == 'loop':
+            if element['name'] == 'loop3' and element['type'] == 'loop':
 
                 self.menu = Gtk.Menu()
                 menuitem1 = Gtk.MenuItem('Format')
@@ -128,7 +169,7 @@ class Rectangle(Gtk.Button):
                 self.menu.show_all()
                 
                 
-            elif elem['label']['name'] == 'loop3' and elem['type'] == 'pv':
+            elif element['label']['name'] == 'loop3' and element['type'] == 'pv':
                 
                 self.menu = Gtk.Menu()
                 menuitem1 = Gtk.MenuItem('Add to VG alpha')
@@ -142,25 +183,39 @@ class Rectangle(Gtk.Button):
                 self.menu.popup(None, None, None, None, event.button, event.time)
                 self.menu.show_all()
                  
-            elif elem['name'] == 'sda':
+            elif element['name'] == 'sda':
                 if True:
                     subprocess.check_output(['sudo', 'vgreduce', 'alpha', '/dev/loop3'])
                     subprocess.check_output(['sudo', 'pvremove', '/dev/loop3'])
-                    self.window.paned.destroy()
-                    self.window.__init__()
+                    self.main_window.paned.destroy()
+                    self.main_window.__init__()
                     
         elif event.type == Gdk.EventType._2BUTTON_PRESS:
             self.draw_dependencies()
         else:
-            rectangle = self.window.scheme_box.rectangle
+            rectangle = self.main_window.scheme_box.rectangle
             for rec in rectangle.itervalues():
                 rec.set_name('Rectangle') 
-            self.window.info_box.__init__(self.all_elements, self.uuid)
+            self.main_window.info_box.__init__(self.all_elements, self.uuid)
     
+    
+    def menu_press_1(self, widget, event):
+        
+        subprocess.check_output(['sudo', 'pvcreate', '/dev/loop3'])
+        self.main_window.paned.destroy()
+        self.main_window.__init__()
+        
 
+    def menu_press_2(self, widget, event):
+        
+        subprocess.check_output(['sudo', 'vgextend', 'alpha', '/dev/loop3'])
+        self.main_window.paned.destroy()
+        self.main_window.__init__()
+    
+        
     def draw_dependencies(self):
         
-        rectangle = self.window.scheme_box.rectangle
+        rectangle = self.main_window.scheme_box.rectangle
         dependencies = self.get_dependencies()
         for uuid in rectangle:
             if uuid in dependencies:
@@ -241,115 +296,3 @@ class Rectangle(Gtk.Button):
         
         return dependencies
 
-
-    def get_width(self, elem):
-        """Returns width of rectangle
-        """
-
-        giga_size = int(round(elem['size'] / 1000000000.0))
-        if giga_size < MIN_WIDTH:
-            width = MIN_WIDTH
-        elif giga_size > MAX_WIDTH and elem['type'] != 'vg':
-            # I don't want too wide disks. VG is ok, cause its width depends on
-            # its logical volumes.
-            width = MAX_WIDTH
-        else:
-            width = giga_size
-        return width
-
-
-    def add_left_icons(self, elem, icons, box):
-        """Adds appropriate icons to the top left corner of rectangle.
-        """
-        icon_name = None
-        
-        cond2 = elem['type'].startswith('raid')
-        if elem['type'] in ['disk', 'loop', 'part', 'lv', 'vg', 'pv'] or cond2:
-            if elem['label']['type']['short'] == 'Cache':
-                pass
-            elif elem['label']['type']['short'].startswith('Thin pool'):
-                pass
-            elif elem['label']['type']['short'] == 'VG':
-                pass
-            elif elem['fstype'].startswith('LVM'):
-                icon_name = 'pv'
-            elif elem['children']:
-                child = get_by_uuid(elem['children'][0], self.all_elements)
-                if child['type'] == 'pv':
-                    icon_name = 'pv'
-                else:
-                    pass
-            elif elem['mountpoint']:
-                icon_name = 'mount'
-            elif elem['fstype'] in FS_TYPES:
-                icon_name = 'fs'
-            else:
-                icon_name = 'free'
-            
-        if icon_name:
-            icon = Gtk.Image.new_from_pixbuf(icons[icon_name])        
-            box.pack_start(icon, False, False, 0)
-            
-        if elem['encrypted']:
-            icon = Gtk.Image.new_from_pixbuf(icons['crypt'])
-            box.pack_start(icon, False, False, 0)
-            
-
-    def add_right_icons(self, elem, icons, box):
-        """Adds appropriate icons to the top left corner of rectangle.
-        """
-        
-        icon = Gtk.Image.new_from_pixbuf(icons['menu'])
-        box.pack_start(icon, False, False, 0)
-        
-        
-    def get_icons(self):
-        """Returns dictionary of icons to use in the rectangles.
-        """
-        
-        pixbuf = GdkPixbuf.Pixbuf()
-        
-        icons = {}
-        
-        icons['free'] = pixbuf.new_from_file_at_size('graphics/free.png', 10, 10)
-        icons['pv'] = pixbuf.new_from_file_at_size('graphics/pv.png', 10, 10)
-        icons['mount'] = pixbuf.new_from_file_at_size('graphics/mount.png', 10, 10)
-        icons['fs'] = pixbuf.new_from_file_at_size('graphics/fs.jpg', 9, 9) 
-        icons['crypt'] = pixbuf.new_from_file_at_size('graphics/crypt.png', 10, 12)
-        icons['menu'] = pixbuf.new_from_file_at_size('graphics/menu.png', 13, 13)
-        
-        return icons
-        
-        
-    def get_label(self, elem):
-        """Returns appropriate label.
-        """
-        
-        if elem['type'] == 'pv':
-            name = elem['name'].split('/')[-1]
-        else:
-            name = elem['name']
-            
-        type_label = elem['label']['type']['short']
-        markup = '<b>%s</b>\n<small>%s</small>' %(name, type_label)
-        label = Gtk.Label(justify=Gtk.Justification.CENTER, max_width_chars=5,                          
-                        ellipsize=Pango.EllipsizeMode.END)
-        label.set_markup(markup)
-        
-        return label
-    
-    
-    def get_progress_bar(self, occupied):
-        """Returns progress bar that shows amount of the occupied space.
-        """
-        
-        text = '%.0f %% occupied' % occupied
-        progress_bar = Gtk.ProgressBar()
-        progress_bar.set_fraction(occupied/100)
-        progress_bar.set_text(text)
-        progress_bar.set_show_text(True)
-        
-        return progress_bar
-    
-
-    
