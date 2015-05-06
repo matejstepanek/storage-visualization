@@ -22,12 +22,14 @@ class Rectangle(Gtk.Button):
     
     __gtype_name__ = 'Rectangle'
     
+    
     def __init__(self, element, all_elements, main_window):
         """Initiates rectangle with appropriate size, icons and label.
         """
         
         self.all_elements = all_elements
         self.main_window = main_window
+        self.uuid = element['uuid']
         
         width = self.get_width(element)
         
@@ -35,8 +37,6 @@ class Rectangle(Gtk.Button):
    
         if element['type'] == 'lv':
             self.set_size_request(width, 60)
-            
-        self.uuid = element['uuid']
          
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5,
                        margin_top=2, margin_bottom=2)
@@ -151,7 +151,9 @@ class Rectangle(Gtk.Button):
     def on_button_press(self, widget, event):
 
         element = get_by_uuid(self.uuid, self.all_elements)
-        if event.button == 3:
+        
+        if event.button == 3:   # 3 means right mouse button
+            
             if element['name'] == 'loop3' and element['type'] == 'loop':
 
                 self.menu = Gtk.Menu()
@@ -163,7 +165,7 @@ class Rectangle(Gtk.Button):
                 self.menu.append(menuitem2)
                 self.menu.append(menuitem3)
                 self.menu.append(menuitem4)
-                self.menu.connect('button-press-event', self.menu_press_1)
+                self.menu.connect('button-press-event', self.pvcreate)
 
                 self.menu.popup(None, None, None, None, event.button, event.time)
                 self.menu.show_all()
@@ -178,121 +180,88 @@ class Rectangle(Gtk.Button):
                 self.menu.append(menuitem1)
                 self.menu.append(menuitem2)
                 self.menu.append(menuitem3)
-                self.menu.connect('button-press-event', self.menu_press_2)
+                self.menu.connect('button-press-event', self.vgextend)
 
                 self.menu.popup(None, None, None, None, event.button, event.time)
                 self.menu.show_all()
                  
             elif element['name'] == 'sda':
-                if True:
-                    subprocess.check_output(['sudo', 'vgreduce', 'alpha', '/dev/loop3'])
-                    subprocess.check_output(['sudo', 'pvremove', '/dev/loop3'])
-                    self.main_window.paned.destroy()
-                    self.main_window.__init__()
-                    
-        elif event.type == Gdk.EventType._2BUTTON_PRESS:
+                
+                subprocess.check_output(['sudo', 'vgreduce', 'alpha', '/dev/loop3'])
+                subprocess.check_output(['sudo', 'pvremove', '/dev/loop3'])
+                self.main_window.__init__()
+                
+                
+        elif event.type == Gdk.EventType._2BUTTON_PRESS:    # double click
             self.draw_dependencies()
+            
         else:
-            rectangle = self.main_window.scheme_box.rectangle
-            for rec in rectangle.itervalues():
-                rec.set_name('Rectangle') 
+            self.clear_dependencies()
             self.main_window.info_box.__init__(self.all_elements, self.uuid)
     
     
-    def menu_press_1(self, widget, event):
+    def pvcreate(self, widget, event):
         
         subprocess.check_output(['sudo', 'pvcreate', '/dev/loop3'])
-        self.main_window.paned.destroy()
         self.main_window.__init__()
         
 
-    def menu_press_2(self, widget, event):
+    def vgextend(self, widget, event):
         
         subprocess.check_output(['sudo', 'vgextend', 'alpha', '/dev/loop3'])
-        self.main_window.paned.destroy()
         self.main_window.__init__()
     
         
     def draw_dependencies(self):
         
         rectangle = self.main_window.scheme_box.rectangle
-        dependencies = self.get_dependencies()
+        
+        elem = get_by_uuid(self.uuid, self.all_elements)
+        
+        dependencies = [self.uuid]
+        
+        if elem['parents']:
+            self.append_ancestors(elem, dependencies)
+            
+        if elem['children']:
+            self.append_descendants(elem, dependencies)
+            
         for uuid in rectangle:
             if uuid in dependencies:
                 rectangle[uuid].set_name('Dependency')
             
 
-    def get_dependencies(self):
- 
-        elem = get_by_uuid(self.uuid, self.all_elements)
-        dependencies = [self.uuid]
+    def append_ancestors(self, elem, dependencies):
+        """Recursively appends all ancestors of a given element.
+        """
         
-        # Appends parents and grandparents and so on.
-        for p_uuid in elem['parents']:
-            dependencies.append(p_uuid)
-            p = get_by_uuid(p_uuid,self.all_elements)
-            for p1_uuid in p['parents']:
-                dependencies.append(p1_uuid)
-                p1 = get_by_uuid(p1_uuid,self.all_elements)
-                for p2_uuid in p1['parents']:
-                    dependencies.append(p2_uuid)
-                    p2 = get_by_uuid(p2_uuid,self.all_elements)
-                    for p3_uuid in p2['parents']:
-                        dependencies.append(p3_uuid)
-                        p3 = get_by_uuid(p3_uuid,self.all_elements)
-                        for p4_uuid in p3['parents']:
-                            dependencies.append(p4_uuid)
-                            p4 = get_by_uuid(p4_uuid,self.all_elements)
-                            for p5_uuid in p4['parents']:
-                                dependencies.append(p5_uuid)
-                                p5 = get_by_uuid(p5_uuid,self.all_elements)
-                                for p6_uuid in p5['parents']:
-                                    dependencies.append(p6_uuid)
-                                    p6 = get_by_uuid(p6_uuid,self.all_elements)
-                                    for p7_uuid in p6['parents']:
-                                        dependencies.append(p7_uuid)
-                                        p7 = get_by_uuid(p7_uuid,self.all_elements)
-                                        for p8_uuid in p7['parents']:
-                                            dependencies.append(p8_uuid)
-                                            p8 = get_by_uuid(p8_uuid,self.all_elements)
-                                            for p9_uuid in p8['parents']:
-                                                dependencies.append(p9_uuid)
-                                                p9 = get_by_uuid(p9_uuid,self.all_elements)
-                                                for p10_uuid in p9['parents']:
-                                                    dependencies.append(p10_uuid)
-        # Appends children, grandchildren and so on.
-        for p_uuid in elem['children']:
-            dependencies.append(p_uuid)
-            p = get_by_uuid(p_uuid,self.all_elements)
-            for p1_uuid in p['children']:
-                dependencies.append(p1_uuid)
-                p1 = get_by_uuid(p1_uuid,self.all_elements)
-                for p2_uuid in p1['children']:
-                    dependencies.append(p2_uuid)
-                    p2 = get_by_uuid(p2_uuid,self.all_elements)
-                    for p3_uuid in p2['children']:
-                        dependencies.append(p3_uuid)
-                        p3 = get_by_uuid(p3_uuid,self.all_elements)
-                        for p4_uuid in p3['children']:
-                            dependencies.append(p4_uuid)
-                            p4 = get_by_uuid(p4_uuid,self.all_elements)
-                            for p5_uuid in p4['children']:
-                                dependencies.append(p5_uuid)
-                                p5 = get_by_uuid(p5_uuid,self.all_elements)
-                                for p6_uuid in p5['children']:
-                                    dependencies.append(p6_uuid)
-                                    p6 = get_by_uuid(p6_uuid,self.all_elements)
-                                    for p7_uuid in p6['children']:
-                                        dependencies.append(p7_uuid)
-                                        p7 = get_by_uuid(p7_uuid,self.all_elements)
-                                        for p8_uuid in p7['children']:
-                                            dependencies.append(p8_uuid)
-                                            p8 = get_by_uuid(p8_uuid,self.all_elements)
-                                            for p9_uuid in p8['children']:
-                                                dependencies.append(p9_uuid)
-                                                p9 = get_by_uuid(p9_uuid,self.all_elements)
-                                                for p10_uuid in p9['children']:
-                                                    dependencies.append(p10_uuid)
+        for parent_uuid in elem['parents']:
+            
+            dependencies.append(parent_uuid)
+            
+            parent = get_by_uuid(parent_uuid,self.all_elements)
+            
+            if parent and parent['parents']:
+                self.append_ancestors(parent, dependencies)
         
-        return dependencies
-
+        
+    def append_descendants(self, elem, dependencies):
+        """Recursively appends all descendants of a given element.
+        """
+        
+        for child_uuid in elem['children']:
+            
+            dependencies.append(child_uuid)
+            
+            child = get_by_uuid(child_uuid,self.all_elements)
+            
+            if child and child['children']:
+                self.append_descendants(child, dependencies)
+                
+    
+    def clear_dependencies(self):
+        
+        rectangle = self.main_window.scheme_box.rectangle
+        for rec in rectangle.itervalues():
+            rec.set_name('Rectangle')
+            

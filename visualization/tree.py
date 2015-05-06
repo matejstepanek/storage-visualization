@@ -20,6 +20,8 @@ class TreeBox(Gtk.Box):
         
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
         
+        self.clear()
+        
         self.icons = Icons(all_elements)
         mountpoints = self.get_mountpoints(all_elements)
         
@@ -119,6 +121,17 @@ class TreeBox(Gtk.Box):
         scrolled_window_view.add(tree_view)
         
         return scrolled_window_view
+
+    
+    def clear(self):
+        """Removes previous information shown in info box.
+        """
+        
+        children = self.get_children()
+        
+        for child in children:
+            
+            child.destroy()
 
 
 class TreeView(Gtk.TreeView): 

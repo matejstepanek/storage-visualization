@@ -25,7 +25,9 @@ class MainWindow(Gtk.Window):
         Gtk.Window.__init__(self, default_width=1300, default_height=700, 
                             width_request=400, height_request=400,
                             border_width=5, title='storage visualization')
-
+        
+        self.clear()
+        
         self.connect('delete-event', Gtk.main_quit)
         
         self.set_css_styles()
@@ -65,6 +67,17 @@ class MainWindow(Gtk.Window):
         
         
         self.show_all()
+
+
+    def clear(self):
+        """Removes previous information shown in main window.
+        """
+        
+        children = self.get_children()
+        
+        for child in children:
+            
+            child.destroy()
 
 
     def set_css_styles(self):
