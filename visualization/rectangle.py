@@ -135,7 +135,7 @@ class Rectangle(Gtk.Button):
     
     
     def set_progress_bar(self, occupied, vbox):
-        """Returns progress bar that shows amount of the occupied space.
+        """Adds a progress bar that shows amount of the occupied space.
         """
         
         text = '%.0f %% occupied' % occupied
@@ -213,6 +213,8 @@ class Rectangle(Gtk.Button):
     
         
     def draw_dependencies(self):
+        """Highlights all rectangles that are dependent on the pressed one.
+        """
         
         rectangle = self.main_window.scheme_box.rectangle
         
@@ -260,6 +262,8 @@ class Rectangle(Gtk.Button):
                 
     
     def clear_dependencies(self):
+        """Unhiglights all rectangles.
+        """
         
         rectangle = self.main_window.scheme_box.rectangle
         for rec in rectangle.itervalues():

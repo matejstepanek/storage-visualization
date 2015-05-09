@@ -19,7 +19,7 @@ class MainWindow(Gtk.Window):
     """
 
     def __init__(self):
-        """Draws a window and displays storage scheme and tree panel in it.
+        """Draws a window and displays storage scheme, InfoBox and tree panel in it.
         """
         
         Gtk.Window.__init__(self, default_width=1300, default_height=700, 
@@ -81,6 +81,8 @@ class MainWindow(Gtk.Window):
 
 
     def set_css_styles(self):
+        """Sets css styles for a whole GUI.
+        """
         
         screen = Gdk.Screen.get_default()
 
