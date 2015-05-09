@@ -154,7 +154,7 @@ class TreeView(Gtk.TreeView):
         elem_id = tree_store.get_value(it,2)
         
         self.main_window.info_box.__init__(self.all_elements, elem_id)
-        
+        self.main_window.scheme_box.rectangle[elem_id].clear_dependencies()
         self.main_window.scheme_box.rectangle[elem_id].emit('focus', False)
         
         
