@@ -9,6 +9,7 @@ Box with information about a selected storage element.
 from gi.repository import Gtk #@UnresolvedImport
 
 from data.utils import get_by_uuid
+import visualization.actions as actions
 
 
 class InfoBox(Gtk.Box):
@@ -21,7 +22,7 @@ class InfoBox(Gtk.Box):
         Gtk.Box.__init__(self, halign=Gtk.Align.CENTER, spacing=5, margin_top=13,
                          margin_left = 10, margin_right = 10)
         
-        self.clear()
+        actions.destroy_children(self)
         
         elem = get_by_uuid(uuid,all_elements)
 
@@ -73,15 +74,4 @@ class InfoBox(Gtk.Box):
         label = Gtk.Label(xalign = xalign)
         label.set_markup(text)
         box.pack_start(label, False, True, 0)
-        
-        
-    def clear(self):
-        """Removes previous information shown in info box.
-        """
-        
-        children = self.get_children()
-        
-        for child in children:
-            
-            child.destroy()
 

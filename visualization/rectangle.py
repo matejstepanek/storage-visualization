@@ -11,6 +11,8 @@ import subprocess
 
 from icons import Icons
 from data.utils import get_by_uuid
+import visualization.actions as actions
+
 
 MIN_WIDTH = 110
 MAX_WIDTH = 500
@@ -199,7 +201,7 @@ class Rectangle(Gtk.Button):
             self.draw_dependencies()
             
         else:
-            self.clear_dependencies()
+            actions.clear_dependencies(self.main_window)
             self.main_window.info_box.__init__(self.all_elements, self.uuid)
     
     
@@ -219,7 +221,7 @@ class Rectangle(Gtk.Button):
         """Highlights all rectangles that are dependent on the pressed one.
         """
         
-        rectangle = self.main_window.scheme_box.rectangle
+        rectangles = self.main_window.scheme_box.rectangles
         
         element = get_by_uuid(self.uuid, self.all_elements)
         
@@ -232,9 +234,9 @@ class Rectangle(Gtk.Button):
             if element['children']:
                 self.append_descendants(element, dependencies)
                 
-            for uuid in rectangle:
+            for uuid in rectangles:
                 if uuid in dependencies:
-                    rectangle[uuid].set_name('Dependency')
+                    rectangles[uuid].set_name('Dependency')
             
 
     def append_ancestors(self, element, dependencies):
@@ -264,12 +266,3 @@ class Rectangle(Gtk.Button):
             if child and child['children']:
                 self.append_descendants(child, dependencies)
                 
-    
-    def clear_dependencies(self):
-        """Unhiglights all rectangles.
-        """
-        
-        rectangle = self.main_window.scheme_box.rectangle
-        for rec in rectangle.itervalues():
-            rec.set_name('Rectangle')
-            

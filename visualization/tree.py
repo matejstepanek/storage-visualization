@@ -10,6 +10,7 @@ from gi.repository import Gtk, GdkPixbuf   #@UnresolvedImport
 
 from data.utils import get_by_uuid
 from icons import Icons
+import visualization.actions as actions
 
 
 class TreeBox(Gtk.Box):
@@ -20,7 +21,7 @@ class TreeBox(Gtk.Box):
         
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
         
-        self.clear()
+        actions.destroy_children(self)
         
         self.icons = Icons(all_elements)
         mountpoints = self.get_mountpoints(all_elements)
@@ -46,7 +47,7 @@ class TreeBox(Gtk.Box):
         self.pack_start(stack_switcher, False, True, 0)
         self.pack_start(stack, True, True, 0)
         
-        
+
     def get_mountpoints(self, all_elements):
         """Returns storage elements with mounted file systems.
         """
@@ -123,18 +124,7 @@ class TreeBox(Gtk.Box):
         scrolled_window_view.add(tree_view)
         
         return scrolled_window_view
-
     
-    def clear(self):
-        """Removes previous information shown in info box.
-        """
-        
-        children = self.get_children()
-        
-        for child in children:
-            
-            child.destroy()
-
 
 class TreeView(Gtk.TreeView): 
     
@@ -148,7 +138,9 @@ class TreeView(Gtk.TreeView):
         self.connect('row_activated', self.on_row_activated)
         self.set_activate_on_single_click(True)
         
-
+        self.connect('button-press-event', self.on_button_press)
+        
+        
     def on_row_activated(self, widget, path, column):
         
         tree_store = self.get_model()
@@ -156,7 +148,11 @@ class TreeView(Gtk.TreeView):
         elem_id = tree_store.get_value(it,2)
         
         self.main_window.info_box.__init__(self.all_elements, elem_id)
-        self.main_window.scheme_box.rectangle[elem_id].clear_dependencies()
-        self.main_window.scheme_box.rectangle[elem_id].emit('focus', False)
+        actions.clear_dependencies(self.main_window)
+        self.main_window.scheme_box.rectangles[elem_id].emit('focus', False)
         
+    def on_button_press(self, widget, event):
+        
+        self.main_window.info_box.__init__(self.all_elements)
+        actions.clear_dependencies(self.main_window)
         

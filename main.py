@@ -12,6 +12,7 @@ from data.data import Elements
 from visualization.scheme import SchemeBox
 from visualization.info import InfoBox
 from visualization.tree import TreeBox
+import visualization.actions as actions
 
 
 class MainWindow(Gtk.Window):
@@ -26,7 +27,7 @@ class MainWindow(Gtk.Window):
                             width_request=400, height_request=400,
                             border_width=5, title='storage visualization')
         
-        self.clear()
+        actions.destroy_children(self)
         
         self.connect('delete-event', Gtk.main_quit)
         
@@ -67,17 +68,6 @@ class MainWindow(Gtk.Window):
         
         
         self.show_all()
-
-
-    def clear(self):
-        """Removes previous information shown in main window.
-        """
-        
-        children = self.get_children()
-        
-        for child in children:
-            
-            child.destroy()
 
 
     def set_css_styles(self):

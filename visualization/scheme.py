@@ -17,7 +17,7 @@ class SchemeBox(Gtk.Box):
     """Scheme of storage layers.
     """
     
-    def __init__(self, window, all_elements, pvs, vgs, lvs, disks_loops):
+    def __init__(self, main_window, all_elements, pvs, vgs, lvs, disks_loops):
         
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL,
                          margin_top=40, margin_bottom=40,
@@ -29,14 +29,14 @@ class SchemeBox(Gtk.Box):
         self.H_GAP_SMALL = 4
         self.H_GAP_BIG = 15
         
-        self.window = window
+        self.main_window = main_window
         self.all_elements = all_elements
         
         self.color_pairs = {}
         self.colors = ['Orange', 'Chocolate', 'Chameleon', 'SkyBlue', 'Plum', 'ScarletRed']
         self.color_iterator = 0
         
-        self.rectangle = {}
+        self.rectangles = {}
         
         
         physical_area = PhysicalArea(self, all_elements, disks_loops)
@@ -49,6 +49,7 @@ class SchemeBox(Gtk.Box):
         self.pack_start(logical_area, False, False, 0)
         
         
+#         self.connect('button-press-event', self.on_button_press)
         self.show_all()
 
 
@@ -56,25 +57,25 @@ class SchemeBox(Gtk.Box):
         """Adds rectangle to a given box.
         """
         
-        self.rectangle[elem['uuid']] = rectangle.Rectangle(elem, self.all_elements,
-                                                           self.window)
+        self.rectangles[elem['uuid']] = rectangle.Rectangle(elem, self.all_elements,
+                                                           self.main_window)
         
-        self.rectangle[elem['uuid']].set_name(elem['uuid'])
+        self.rectangles[elem['uuid']].set_name(elem['uuid'])
         
         
         if elem['type'] == 'lv':
             
             if elem['is_origin']:
-                self.set_color(elem['name'], self.rectangle[elem['uuid']].color_box)
+                self.set_color(elem['name'], self.rectangles[elem['uuid']].color_box)
             
             if elem['origin'] and elem['segtype'] != 'cache':
-                self.set_color(elem['origin'], self.rectangle[elem['uuid']].color_box)
+                self.set_color(elem['origin'], self.rectangles[elem['uuid']].color_box)
         
         
         if expand_fill:
-            box.pack_start(self.rectangle[elem['uuid']], True, True, 0)
+            box.pack_start(self.rectangles[elem['uuid']], True, True, 0)
         else:  
-            box.pack_start(self.rectangle[elem['uuid']], False, False, 0)
+            box.pack_start(self.rectangles[elem['uuid']], False, False, 0)
 
     
     def set_color(self, elem_name, widget):
@@ -89,4 +90,9 @@ class SchemeBox(Gtk.Box):
             self.color_pairs[elem_name] = color
             widget.set_name(color)
             self.color_iterator += 1
+
+            
+    def on_button_press(self, widget, event):
+        
+        print 'scheme'
 
