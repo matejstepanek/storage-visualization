@@ -65,6 +65,7 @@ class Rectangle(Gtk.Button):
         if element['occupied'] >= 0:
             self.set_progress_bar(element['occupied'], vbox)
 
+
         self.connect('button-press-event', self.on_button_press)
     
     
@@ -147,6 +148,8 @@ class Rectangle(Gtk.Button):
         
         vbox.pack_start(progress_bar, False, False, 0)
     
+
+####### ON RECTANGLE PRESS ####################################################
 
     def on_button_press(self, widget, event):
 
