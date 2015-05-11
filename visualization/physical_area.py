@@ -39,26 +39,28 @@ class PhysicalArea(Gtk.Box):
             part_row = Gtk.Box(spacing=scheme.H_GAP_SMALL)
             disk_box.add(part_row)
             
-            for elem_uuid in disk['children']:
+            for element_uuid in disk['children']:
                 
-                elem = get_by_uuid(elem_uuid, all_elements)
+                element = get_by_uuid(element_uuid, all_elements)
                 
-                if elem['type'] == 'pv':
-                    break
-                elif elem['type'] == 'part':
-                    scheme.add_rectangle(elem, part_row)
-                else:
-                    self.add_raid(elem, scheme)
-
-                
-                for elem2_uuid in elem['children']:
-                    
-                    elem2 = get_by_uuid(elem2_uuid, all_elements)
-                    
-                    if elem2['type'] == 'pv':
+                if element:
+                    if element['type'] == 'pv':
                         break
+                    elif element['type'] == 'part':
+                        scheme.add_rectangle(element, part_row)
+                    else:
+                        self.add_raid(element, scheme)
+    
                     
-                    self.add_raid(elem2, scheme)
+                    for element2_uuid in element['children']:
+                        
+                        element2 = get_by_uuid(element2_uuid, all_elements)
+                        
+                        if element2:
+                            if element2['type'] == 'pv':
+                                break
+                            
+                            self.add_raid(element2, scheme)
 
     
     def add_raid(self, element, scheme):

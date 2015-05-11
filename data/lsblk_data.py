@@ -325,6 +325,7 @@ def skip_encryption(elements):
                 for child_uuid in elem['children']:
                     
                     child = utils.get_by_uuid(child_uuid, elements)
+                    
                     if child:    
                         child['parents'].remove(crypt['uuid'])
                         child['parents'].append(elem['uuid'])

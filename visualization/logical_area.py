@@ -52,7 +52,7 @@ class LogicalArea(Gtk.Box):
             vg_boxes[vg_name].add(self.lv_rows[vg_name])  
             
             thin_rows[vg_name] = Gtk.Box(spacing=scheme.H_GAP_SMALL)                      
-            
+            vg_boxes_plus[vg_name].add(thin_rows[vg_name])
             
             thin_pools = []
             rest = []
@@ -61,48 +61,53 @@ class LogicalArea(Gtk.Box):
                                
                 lv = get_by_uuid(lv_uuid, lvs)
                 
-                if lv['segtype'] == 'cache-pool':
-                    continue
-                
-                elif lv['segtype'] == 'cache':
-                    self.add_cache(lv, lvs, vg_name, scheme)
+                if lv:
+                    if lv['segtype'] == 'cache-pool':
+                        continue
                     
-                elif lv['label']['type']['short'].startswith('Thin pool'):
-                    thin_pools.append(lv_uuid)
-                    continue
-                
-                else:
-                    rest.append(lv_uuid)
+                    elif lv['segtype'] == 'cache':
+                        self.add_cache(lv, lvs, vg_name, scheme)
+                        
+                    elif lv['label']['type']['short'].startswith('Thin pool'):
+                        thin_pools.append(lv_uuid)
+                        continue
+                    
+                    else:
+                        rest.append(lv_uuid)
 
 
             # thin pools   
             for pool_uuid in thin_pools:
                 
-                pool = get_by_uuid(pool_uuid, lvs)                
-                scheme.add_rectangle(pool, self.lv_rows[vg_name])                 
+                pool = get_by_uuid(pool_uuid, lvs)
                 
-                if pool['children']:            
-                    frame = Gtk.Frame(label=pool['name'])                    
-                    thin_rows[vg_name].add(frame)
+                if pool:               
+                    scheme.add_rectangle(pool, self.lv_rows[vg_name])                 
                     
-                    thin_box = Gtk.Box(margin_left=3, margin_right=3,
-                                       margin_bottom=3, spacing=scheme.H_GAP_SMALL)
-                    frame.add(thin_box)
+                    if pool['children']:            
+                        frame = Gtk.Frame(label=pool['name'])                    
+                        thin_rows[vg_name].add(frame)
+                        
+                        thin_box = Gtk.Box(margin_left=3, margin_right=3,
+                                           margin_bottom=3, spacing=scheme.H_GAP_SMALL)
+                        frame.add(thin_box)
                     
                 # thin logical volumes rectangles                
                 for thin_lv_uuid in pool['children']:
                     
                     thin_lv = get_by_uuid(thin_lv_uuid, lvs)
-                    scheme.add_rectangle(thin_lv, thin_box)    
+                    
+                    if thin_lv:
+                        scheme.add_rectangle(thin_lv, thin_box)    
                                 
-            vg_boxes_plus[vg_name].add(thin_rows[vg_name])
-            
             
             # logical volumes rectangles
             for lv_uuid in rest:
                 
-                lv = get_by_uuid(lv_uuid, lvs)   
-                scheme.add_rectangle(lv, self.lv_rows[vg_name])      
+                lv = get_by_uuid(lv_uuid, lvs)
+                
+                if lv: 
+                    scheme.add_rectangle(lv, self.lv_rows[vg_name])      
      
 
         # physical volumes not used in any VG
@@ -125,7 +130,7 @@ class LogicalArea(Gtk.Box):
                 
     
     def add_cache(self, lv, lvs, vg_name, scheme):
-        """
+        """Adds a logical volume with lvm cache.
         """
         
         lv_name = lv['name']
@@ -133,7 +138,8 @@ class LogicalArea(Gtk.Box):
         self.lv_rows[vg_name].add(self.cached[lv_name])
         
         cache_pool = get_by_name(lv['pool_lv'], lvs)
-        scheme.add_rectangle(cache_pool, self.cached[lv_name])
+        if cache_pool:
+            scheme.add_rectangle(cache_pool, self.cached[lv_name])
         
         pixbuf = GdkPixbuf.Pixbuf()
         arrow = pixbuf.new_from_file_at_size('graphics/cache.png', 10, 20)

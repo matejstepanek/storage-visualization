@@ -103,17 +103,17 @@ class Rectangle(Gtk.Button):
         return label
     
 
-    def add_left_icons(self, elem, icons, box):
+    def add_left_icons(self, element, icons, box):
         """Adds appropriate icons to the top left corner of the rectangle.
         """
         
-        icon = icons.assign_icon(elem)
+        icon = icons.assign_icon(element)
             
         if icon:
             image = Gtk.Image.new_from_pixbuf(icon)        
             box.pack_start(image, False, False, 0)
             
-        if elem['encrypted']:
+        if element['encrypted']:
             image_crypt = Gtk.Image.new_from_pixbuf(icons.crypt)
             box.pack_start(image_crypt, False, False, 0)
             
@@ -221,26 +221,27 @@ class Rectangle(Gtk.Button):
         
         rectangle = self.main_window.scheme_box.rectangle
         
-        elem = get_by_uuid(self.uuid, self.all_elements)
+        element = get_by_uuid(self.uuid, self.all_elements)
         
         dependencies = [self.uuid]
         
-        if elem['parents']:
-            self.append_ancestors(elem, dependencies)
-            
-        if elem['children']:
-            self.append_descendants(elem, dependencies)
-            
-        for uuid in rectangle:
-            if uuid in dependencies:
-                rectangle[uuid].set_name('Dependency')
+        if element:
+            if element['parents']:
+                self.append_ancestors(element, dependencies)
+                
+            if element['children']:
+                self.append_descendants(element, dependencies)
+                
+            for uuid in rectangle:
+                if uuid in dependencies:
+                    rectangle[uuid].set_name('Dependency')
             
 
-    def append_ancestors(self, elem, dependencies):
+    def append_ancestors(self, element, dependencies):
         """Recursively appends all ancestors of a given element.
         """
         
-        for parent_uuid in elem['parents']:
+        for parent_uuid in element['parents']:
             
             dependencies.append(parent_uuid)
             
@@ -250,11 +251,11 @@ class Rectangle(Gtk.Button):
                 self.append_ancestors(parent, dependencies)
         
         
-    def append_descendants(self, elem, dependencies):
+    def append_descendants(self, element, dependencies):
         """Recursively appends all descendants of a given element.
         """
         
-        for child_uuid in elem['children']:
+        for child_uuid in element['children']:
             
             dependencies.append(child_uuid)
             

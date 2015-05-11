@@ -54,6 +54,7 @@ class TreeBox(Gtk.Box):
         mountpoints = []
         
         for elem in all_elements:
+            
             if elem['mountpoint']:
                 mountpoints.append(elem)
             
@@ -92,6 +93,7 @@ class TreeBox(Gtk.Box):
         for child_uuid in parent['children']:
                 
                 child = get_by_uuid(child_uuid, elements)
+                
                 if child and child['type'] != 'pv':
                     new_parent_row = self.append_row(child, store, parent_row, info)
                 else:
