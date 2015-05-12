@@ -47,22 +47,16 @@ class Rectangle(Gtk.Button):
         hbox = Gtk.Box(spacing=4)
         vbox.pack_start(hbox, False, False, 0)
         
-        self.left_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5,
-                                 width_request=9)
+        self.left_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
         hbox.pack_start(self.left_vbox, False, False, 0)
             
         label = self.get_label(element)
         hbox.pack_start(label, True, True, 0)
         
-        self.right_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        hbox.pack_start(self.right_vbox, False, False, 0)
-        
-        icons = Icons(self.all_elements)
-        self.add_left_icons(element, icons, self.left_vbox)
-        self.add_right_icons(element, icons, self.right_vbox)
+        self.add_left_icons(element, self.left_vbox)
         
         if element['type'] == 'lv' and (element['is_origin'] or (element['origin'] and element['segtype'] != 'cache')):
-            self.set_color_box(vbox)
+            self.set_color_box(hbox)
         
         if element['occupied'] >= 0:
             self.set_progress_bar(element['occupied'], vbox)
@@ -105,10 +99,11 @@ class Rectangle(Gtk.Button):
         return label
     
 
-    def add_left_icons(self, element, icons, box):
+    def add_left_icons(self, element, box):
         """Adds appropriate icons to the top left corner of the rectangle.
         """
         
+        icons = Icons(self.all_elements)
         icon = icons.assign_icon(element)
             
         if icon:
@@ -120,21 +115,13 @@ class Rectangle(Gtk.Button):
             box.pack_start(image_crypt, False, False, 0)
             
 
-    def add_right_icons(self, element, icons, box):
-        """Adds appropriate icons to the top right corner of the rectangle.
-        """
-        
-        image_menu = Gtk.Image.new_from_pixbuf(icons.menu)
-        box.pack_start(image_menu, False, False, 0)
-        
-    
-    def set_color_box(self, vbox):
+    def set_color_box(self, hbox):
         """Adds a color box for highlighting snapshots and their origins.
         """
         
-        self.color_box = Gtk.Frame(height_request=6)
+        self.color_box = Gtk.Frame(width_request=6)
         self.color_box.set_shadow_type(Gtk.ShadowType.NONE)
-        vbox.pack_start(self.color_box, False, False, 0)
+        hbox.pack_start(self.color_box, False, False, 0)
     
     
     def set_progress_bar(self, occupied, vbox):
