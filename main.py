@@ -29,8 +29,6 @@ class MainWindow(Gtk.Window):
         
         actions.destroy_children(self)
         
-        self.connect('delete-event', Gtk.main_quit)
-        
         self.set_css_styles()
         
         elems = Elements()
@@ -67,6 +65,8 @@ class MainWindow(Gtk.Window):
         centering.add(self.info_box)
         
         
+        self.connect('delete-event', Gtk.main_quit)
+        self.connect('button-press-event', self.on_button_press)        
         self.show_all()
 
 
@@ -83,6 +83,13 @@ class MainWindow(Gtk.Window):
         context.add_provider_for_screen(screen, css_provider,
                                         Gtk.STYLE_PROVIDER_PRIORITY_USER)
 
+
+    def on_button_press(self, widget, event):
+        
+        if event.button == 1 and event.type == Gdk.EventType.BUTTON_PRESS:
+            
+            actions.clear_dependencies(self)            
+        
 
 if __name__ == '__main__':
     MainWindow()

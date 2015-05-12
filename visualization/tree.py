@@ -151,8 +151,9 @@ class TreeView(Gtk.TreeView):
         actions.clear_dependencies(self.main_window)
         self.main_window.scheme_box.rectangles[elem_id].emit('focus', False)
         
+        
     def on_button_press(self, widget, event):
         
         self.main_window.info_box.__init__(self.all_elements)
         actions.clear_dependencies(self.main_window)
-        
+
