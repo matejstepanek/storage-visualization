@@ -33,7 +33,8 @@ class SchemeBox(Gtk.Box):
         self.all_elements = all_elements
         
         self.color_pairs = {}
-        self.colors = ['Orange', 'Chocolate', 'Chameleon', 'SkyBlue', 'Plum', 'ScarletRed']
+        self.colors = ['Orange', 'Chocolate', 'Chameleon', 'SkyBlue', 'Plum',
+                       'ScarletRed']
         self.color_iterator = 0
         
         self.rectangles = {}
@@ -42,57 +43,54 @@ class SchemeBox(Gtk.Box):
         physical_area = PhysicalArea(self, all_elements, disks_loops)
         self.pack_start(physical_area, False, False, 0)
          
-        separator = Gtk.Separator(margin_top=self.V_GAP_BIG, margin_bottom=self.V_GAP_BIG)
+        separator = Gtk.Separator(margin_top=self.V_GAP_BIG,
+                                  margin_bottom=self.V_GAP_BIG)
         self.pack_start(separator, False, False, 0)
            
         logical_area = LogicalArea(self, all_elements, pvs, vgs, lvs)
         self.pack_start(logical_area, False, False, 0)
         
-        
-#         self.connect('button-press-event', self.on_button_press)
+
         self.show_all()
 
 
-    def add_rectangle(self, elem, box, expand_fill=False):
+    def add_rectangle(self, element, box, expand_fill=False):
         """Adds rectangle to a given box.
         """
         
-        self.rectangles[elem['uuid']] = rectangle.Rectangle(elem, self.all_elements,
-                                                           self.main_window)
+        uuid = element['uuid']
         
-        self.rectangles[elem['uuid']].set_name(elem['uuid'])
+        self.rectangles[uuid] = rectangle.Rectangle(element, self.all_elements,
+                                                    self.main_window)
+        
+        self.rectangles[uuid].set_name(uuid)
         
         
-        if elem['type'] == 'lv':
+        if element['type'] == 'lv':
             
-            if elem['is_origin']:
-                self.set_color(elem['name'], self.rectangles[elem['uuid']].color_box)
+            if element['is_origin']:
+                self.set_color(element['name'], self.rectangles[uuid].color_box)
             
-            if elem['origin'] and elem['segtype'] != 'cache':
-                self.set_color(elem['origin'], self.rectangles[elem['uuid']].color_box)
+            if element['origin'] and element['segtype'] != 'cache':
+                self.set_color(element['origin'], self.rectangles[uuid].color_box)
         
         
         if expand_fill:
-            box.pack_start(self.rectangles[elem['uuid']], True, True, 0)
+            box.pack_start(self.rectangles[uuid], True, True, 0)
         else:  
-            box.pack_start(self.rectangles[elem['uuid']], False, False, 0)
+            box.pack_start(self.rectangles[uuid], False, False, 0)
 
     
-    def set_color(self, elem_name, widget):
+    def set_color(self, element_name, widget):
         """Sets color of a given widget. (For snapshots and their origins.)
         """
         
-        if elem_name in self.color_pairs:
-            color = self.color_pairs[elem_name]
+        if element_name in self.color_pairs:
+            color = self.color_pairs[element_name]
             widget.set_name(color)
         else:
             color = self.colors[self.color_iterator]
-            self.color_pairs[elem_name] = color
+            self.color_pairs[element_name] = color
             widget.set_name(color)
             self.color_iterator += 1
-
-            
-    def on_button_press(self, widget, event):
-        
-        print 'scheme'
 

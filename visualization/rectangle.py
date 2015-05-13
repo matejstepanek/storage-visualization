@@ -55,8 +55,10 @@ class Rectangle(Gtk.Button):
         
         self.add_left_icons(element, self.left_vbox)
         
-        if element['type'] == 'lv' and (element['is_origin'] or (element['origin'] and element['segtype'] != 'cache')):
-            self.set_color_box(hbox)
+        
+        if element['type'] == 'lv':
+            if element['is_origin'] or (element['origin'] and element['segtype'] != 'cache'):
+                self.set_color_box(hbox)
         
         if element['occupied'] >= 0:
             self.set_progress_bar(element['occupied'], vbox)
@@ -182,7 +184,19 @@ class Rectangle(Gtk.Button):
                 subprocess.check_output(['sudo', 'vgreduce', 'alpha', '/dev/loop3'])
                 subprocess.check_output(['sudo', 'pvremove', '/dev/loop3'])
                 self.main_window.__init__()
+            
+            else:
+                actions.clear_dependencies(self.main_window)
+
+                self.main_window.scheme_box.rectangles[self.uuid].emit('activate')
+
+                self.main_window.scheme_box.rectangles[self.uuid].emit('focus', False)
+                 
+                self.main_window.info_box.__init__(self.all_elements, self.uuid)
                 
+                self.menu = actions.Menu(element, self.main_window)
+                self.menu.popup(None, None, None, None, event.button, event.time)
+
                 
         elif event.type == Gdk.EventType._2BUTTON_PRESS:    # double click
             self.draw_dependencies()
@@ -212,7 +226,7 @@ class Rectangle(Gtk.Button):
         
         element = get_by_uuid(self.uuid, self.all_elements)
         
-        dependencies = [self.uuid]
+        dependencies = []
         
         if element:
             if element['parents']:
@@ -223,7 +237,7 @@ class Rectangle(Gtk.Button):
                 
             for uuid in rectangles:
                 if uuid in dependencies:
-                    rectangles[uuid].set_name('Dependency')
+                    rectangles[uuid].set_name('Highlighted')
             
 
     def append_ancestors(self, element, dependencies):

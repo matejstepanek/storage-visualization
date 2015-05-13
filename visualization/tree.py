@@ -6,7 +6,7 @@ Created: 2015
 Displaying storage elements in dependency trees.
 '''
 
-from gi.repository import Gtk, GdkPixbuf   #@UnresolvedImport
+from gi.repository import Gtk, Gdk, GdkPixbuf   #@UnresolvedImport
 
 from data.utils import get_by_uuid
 from icons import Icons
@@ -54,10 +54,10 @@ class TreeBox(Gtk.Box):
         
         mountpoints = []
         
-        for elem in all_elements:
+        for element in all_elements:
             
-            if elem['mountpoint']:
-                mountpoints.append(elem)
+            if element['mountpoint']:
+                mountpoints.append(element)
             
         return mountpoints
 
@@ -135,25 +135,46 @@ class TreeView(Gtk.TreeView):
         self.all_elements = all_elements
         self.main_window = main_window
         
-        self.connect('row_activated', self.on_row_activated)
-        self.set_activate_on_single_click(True)
-        
         self.connect('button-press-event', self.on_button_press)
+
+    
+    def on_button_press(self, tree_view, event):
         
-        
-    def on_row_activated(self, widget, path, column):
-        
-        tree_store = self.get_model()
-        it = tree_store.get_iter(path)
-        elem_id = tree_store.get_value(it,2)
-        
-        self.main_window.info_box.__init__(self.all_elements, elem_id)
         actions.clear_dependencies(self.main_window)
-        self.main_window.scheme_box.rectangles[elem_id].emit('focus', False)
-        
-        
-    def on_button_press(self, widget, event):
-        
         self.main_window.info_box.__init__(self.all_elements)
-        actions.clear_dependencies(self.main_window)
+        
+        if event.type == Gdk.EventType._2BUTTON_PRESS:    # double click
+
+            row = tree_view.get_path_at_pos(int(event.x), int(event.y))    
+            
+            if row:
+                
+                uuid = self.get_uuid(row[0], tree_view)
+                
+                self.main_window.info_box.__init__(self.all_elements, uuid)
+                actions.clear_dependencies(self.main_window)
+                self.main_window.scheme_box.rectangles[uuid].set_name('Focused')
+                
+        elif event.button == 3:
+            
+            row = tree_view.get_path_at_pos(int(event.x), int(event.y))    
+            
+            if row:
+                
+                uuid = self.get_uuid(row[0], tree_view)
+                element = get_by_uuid(uuid, self.all_elements)
+                
+                self.menu = actions.Menu(element, self.main_window)
+                self.menu.popup(None, None, None, None, event.button, event.time)
+            
+
+    def get_uuid(self, path, tree_view):
+        """Returns uuid of the row on the given path.
+        """
+        
+        tree_store = tree_view.get_model()
+        iterator = tree_store.get_iter(path)
+        uuid = tree_store.get_value(iterator,2)
+        
+        return uuid
 

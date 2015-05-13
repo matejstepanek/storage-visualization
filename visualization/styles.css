@@ -17,7 +17,13 @@ Rectangle:focused {
   border-width: 2px;
 }
 
-#Dependency {
+#Focused {
+  background-color: #ffcd00;
+  border-color: black;
+  border-width: 2px;
+}
+
+#Highlighted {
   background-color: #ffcd00;
 }
 

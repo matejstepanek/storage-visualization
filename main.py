@@ -20,7 +20,7 @@ class MainWindow(Gtk.Window):
     """
 
     def __init__(self):
-        """Draws a window and displays storage scheme, InfoBox and tree panel in it.
+        """Draws a GUI.
         """
         
         Gtk.Window.__init__(self, default_width=1300, default_height=700, 
@@ -54,8 +54,8 @@ class MainWindow(Gtk.Window):
         main_box.pack_start(scrolled_info_window, False, False, 0)
         
         
-        self.scheme_box = SchemeBox(self, elems.all_elements, elems.pvs, elems.vgs,
-                                 elems.lvs, elems.disks_loops)
+        self.scheme_box = SchemeBox(self, elems.all_elements, elems.pvs,
+                                    elems.vgs, elems.lvs, elems.disks_loops)
         scrolled_scheme_window.add(self.scheme_box)        
 
         centering = Gtk.Alignment(xalign=0.5)
@@ -88,7 +88,7 @@ class MainWindow(Gtk.Window):
         
         if event.button == 1 and event.type == Gdk.EventType.BUTTON_PRESS:
             
-            actions.clear_dependencies(self)            
+            actions.clear_dependencies(self)
         
 
 if __name__ == '__main__':

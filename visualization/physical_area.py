@@ -21,7 +21,8 @@ class PhysicalArea(Gtk.Box):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL,
                          spacing=scheme.V_GAP_SMALL)
         
-        disks_partitions_box = Gtk.Box(halign=Gtk.Align.CENTER, spacing=scheme.H_GAP_BIG)
+        disks_partitions_box = Gtk.Box(halign=Gtk.Align.CENTER,
+                                       spacing=scheme.H_GAP_BIG)
         self.pack_start(disks_partitions_box, False, False, 0)
         
         self.md_raid_present = False
