@@ -13,10 +13,10 @@ def get_by_uuid(uuid, elements):
     
     match = None
     
-    for elem in elements:
+    for element in elements:
         
-        if elem['uuid'] == uuid:
-            match = elem
+        if element['uuid'] == uuid:
+            match = element
             break
     
     return match
@@ -28,10 +28,10 @@ def get_by_name(name, elements):
     
     match = None
     
-    for elem in elements:
+    for element in elements:
         
-        if elem['name'] == name:
-            match = elem
+        if element['name'] == name:
+            match = element
             break
         
     return match
@@ -48,7 +48,7 @@ def connect(parent, child):
         child['parents'].append(parent['uuid'])
 
 
-def set_label(elem, internal_lvs = None):
+def set_label(element, internal_lvs = None):
     """Sets a label of a storage element.
     
     The label contains information about element's:
@@ -58,29 +58,29 @@ def set_label(elem, internal_lvs = None):
         4) type
     """
 
-    elem['label'] = {}
+    element['label'] = {}
     
-    elem['label']['name'] = elem['name'].split('/')[-1]
+    element['label']['name'] = element['name'].split('/')[-1]
     
-    elem['label']['content'] = elem['fstype']
-    if elem['mountpoint']:
-        elem['label']['content'] += ' - mounted in %s' %elem['mountpoint']
+    element['label']['content'] = element['fstype']
+    if element['mountpoint']:
+        element['label']['content'] += ' - mounted in %s' %element['mountpoint']
     
-    set_label_size(elem)
+    set_label_size(element)
     
-    set_label_type(elem, internal_lvs)
+    set_label_type(element, internal_lvs)
 
 
-def set_label_size(elem):
+def set_label_size(element):
     
-    elem['label']['size'] = make_readable(elem['size'])
+    element['label']['size'] = make_readable(element['size'])
     
-    if elem['occupied'] >= 0:
+    if element['occupied'] >= 0:
 
-        free = elem['size'] * (1 - elem['occupied']/100)
+        free = element['size'] * (1 - element['occupied']/100)
         
-        elem['label']['size'] += ' - %s available (%.1f %% occupied)' %(
-                                        make_readable(free), elem['occupied'])
+        element['label']['size'] += ' - %s available (%.1f %% occupied)' %(
+                                    make_readable(free), element['occupied'])
 
 
 def make_readable(size):
@@ -106,91 +106,91 @@ def make_readable(size):
     return readable
 
 
-def set_label_type(elem, internal_lvs):
+def set_label_type(element, internal_lvs):
     
-    elem['label']['type'] = {}
+    element['label']['type'] = {}
     
-    typ = elem['type']
+    typ = element['type']
     
     if typ == 'disk':
-        elem['label']['type']['short'] = 'Disk'
-        elem['label']['type']['long']  = 'Disk'
+        element['label']['type']['short'] = 'Disk'
+        element['label']['type']['long']  = 'Disk'
                         
     elif typ == 'loop':
-        elem['label']['type']['short'] = 'Loop device'
-        elem['label']['type']['long']  = 'Loop device'    
+        element['label']['type']['short'] = 'Loop device'
+        element['label']['type']['long']  = 'Loop device'    
     
     elif typ == 'part':
-        elem['label']['type']['short'] = 'Partition'
-        elem['label']['type']['long']  = 'Partition'
+        element['label']['type']['short'] = 'Partition'
+        element['label']['type']['long']  = 'Partition'
     
     elif typ.startswith('raid'):
-        elem['label']['type']['short'] = typ.capitalize()
-        elem['label']['type']['long']  = typ.capitalize()
+        element['label']['type']['short'] = typ.capitalize()
+        element['label']['type']['long']  = typ.capitalize()
     
     elif typ == 'pv':
-        elem['label']['type']['short'] = 'PV'
-        elem['label']['type']['long']  = 'Physical volume'
+        element['label']['type']['short'] = 'PV'
+        element['label']['type']['long']  = 'Physical volume'
     
     elif typ == 'vg':
-        elem['label']['type']['short'] = 'VG'
-        elem['label']['type']['long']  = 'Volume group'
+        element['label']['type']['short'] = 'VG'
+        element['label']['type']['long']  = 'Volume group'
     
     elif typ == 'lv':
-        set_label_type_lv(elem, internal_lvs)
+        set_label_type_lv(element, internal_lvs)
         
     else:
-        elem['label']['type']['short'] = typ.capitalize()
-        elem['label']['type']['long'] = typ.capitalize()
+        element['label']['type']['short'] = typ.capitalize()
+        element['label']['type']['long'] = typ.capitalize()
         
-    if elem['encrypted']:
-        elem['label']['type']['long'] += ', encrypted'
+    if element['encrypted']:
+        element['label']['type']['long'] += ', encrypted'
 
 
-def set_label_type_lv(elem, internal_lvs):
+def set_label_type_lv(element, internal_lvs):
     """Sets label type of the logical volume.
     """
     
-    type_lv = elem['segtype']
+    type_lv = element['segtype']
          
     if type_lv == 'cache':
-        elem['label']['type']['short'] = 'LV with cache'
-        elem['label']['type']['long']  = 'Logical volume with cache %s' %(
-                                                            elem['pool_lv'])
+        element['label']['type']['short'] = 'LV with cache'
+        element['label']['type']['long']  = 'Logical volume with cache %s' %(
+                                                            element['pool_lv'])
     elif type_lv == 'cache-pool':
-        elem['label']['type']['short'] = 'Cache'
-        elem['label']['type']['long']  = 'Cache'
+        element['label']['type']['short'] = 'Cache'
+        element['label']['type']['long']  = 'Cache'
     
     elif type_lv == 'thin-pool':
-        elem['label']['type']['short'] = 'Thin pool'
-        elem['label']['type']['long']  = 'Pool for thin logical volumes'
+        element['label']['type']['short'] = 'Thin pool'
+        element['label']['type']['long']  = 'Pool for thin logical volumes'
         
-        is_raid = check_tdata(elem, internal_lvs)
+        is_raid = check_tdata(element, internal_lvs)
         if is_raid:
-            elem['label']['type']['short'] += ', ' + is_raid
-            elem['label']['type']['long'] += ', ' + is_raid
+            element['label']['type']['short'] += ', ' + is_raid
+            element['label']['type']['long'] += ', ' + is_raid
              
     elif type_lv == 'thin':
          
-        if elem['origin']:
-            elem['label']['type']['short'] = 'Thin snap.'
-            elem['label']['type']['long']  = 'Thin snapshot of %s' %(
-                                                            elem['origin'])
+        if element['origin']:
+            element['label']['type']['short'] = 'Thin snap.'
+            element['label']['type']['long']  = 'Thin snapshot of %s' %(
+                                                            element['origin'])
         else:    
-            elem['label']['type']['short'] = 'Thin LV'
-            elem['label']['type']['long']  = 'Thin logical volume'
+            element['label']['type']['short'] = 'Thin LV'
+            element['label']['type']['long']  = 'Thin logical volume'
              
-    elif elem['origin']:
-        elem['label']['type']['short'] = 'Snapshot'
-        elem['label']['type']['long']  = 'Snapshot of %s'%elem['origin']
+    elif element['origin']:
+        element['label']['type']['short'] = 'Snapshot'
+        element['label']['type']['long']  = 'Snapshot of %s' %element['origin']
     
     else:
-        elem['label']['type']['short'] = 'LV'
-        elem['label']['type']['long']  = 'Logical volume'
+        element['label']['type']['short'] = 'LV'
+        element['label']['type']['long']  = 'Logical volume'
      
     if type_lv.startswith('raid'):
-            elem['label']['type']['short'] += ', ' + type_lv
-            elem['label']['type']['long'] += ', ' + type_lv 
+            element['label']['type']['short'] += ', ' + type_lv
+            element['label']['type']['long'] += ', ' + type_lv 
 
 
 def check_tdata(thin_pool, internal_lvs):
