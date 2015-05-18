@@ -7,6 +7,9 @@ Auxiliary functions.
 '''
 
 
+FS_TYPES = ['ext3', 'ext4', 'vfat', 'ntfs', 'btrfs', 'xfs']
+
+
 def get_by_uuid(uuid, elements):
     """From the list of storage elements returns an element with a given uuid.
     """

@@ -8,9 +8,7 @@ Icons representing features of storage elements.
 
 from gi.repository import GdkPixbuf #@UnresolvedImport
 
-from data.utils import get_by_uuid
-
-FS_TYPES = ['ext3', 'ext4', 'vfat', 'ntfs', 'btrfs', 'xfs']
+from data.utils import get_by_uuid, FS_TYPES
 
 
 class Icons:
