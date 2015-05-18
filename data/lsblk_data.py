@@ -138,6 +138,8 @@ def add_crypt_to_chidren(devices):
             parent = devices[i-1]
             utils.connect(parent, device)
             
+            parent['encrypted'] = True
+
 
 def add_partitions_to_children(devices):
     """Includes disk partitions among children of their parent devices.
