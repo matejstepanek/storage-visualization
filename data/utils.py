@@ -65,9 +65,13 @@ def set_label(element, internal_lvs = None):
     
     element['label']['name'] = element['name'].split('/')[-1]
     
-    element['label']['content'] = element['fstype']
-    if element['mountpoint']:
-        element['label']['content'] += ' - mounted in %s' %element['mountpoint']
+    if element['fstype']:
+        element['label']['content'] = element['fstype']
+        
+        if element['mountpoint']:
+            element['label']['content'] += ' - mounted in %s' %element['mountpoint']
+    else:
+        element['label']['content'] = '  -  '
     
     set_label_size(element)
     
