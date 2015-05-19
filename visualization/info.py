@@ -48,10 +48,8 @@ class InfoBox(Gtk.Box):
             
             self.add_label(element['label']['size'], vbox_values)
             
-            
-            if element['label']['content']:
-                self.add_label('Content:', vbox_keys, 1)
-                self.add_label(element['label']['content'], vbox_values)
+            self.add_label('Content:', vbox_keys, 1)
+            self.add_label(element['label']['content'], vbox_values)
             
 
 #             self.add_label('uuid:', vbox_keys, 1)
