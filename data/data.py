@@ -50,13 +50,13 @@ class Elements:
         lsblk_lvm = []
         copy_lsblk = lsblk[:]
         
-        for elem in copy_lsblk:
+        for element in copy_lsblk:
             
-            if elem['type'] == 'lvm':                      
-                lsblk.remove(elem)
+            if element['type'] == 'lvm':                      
+                lsblk.remove(element)
                 
-                if elem not in lsblk_lvm:
-                    lsblk_lvm.append(elem)
+                if element not in lsblk_lvm:
+                    lsblk_lvm.append(element)
                     
         return (lsblk, lsblk_lvm)
 

@@ -42,17 +42,17 @@ def get_pvs():
     return pvs
 
 
-def process_lvm_element(elem):
+def process_lvm_element(element):
     """Sets and modifies attributes of lvm element.
     """
     
-    elem['uuid'] = ''.join([elem['name'], '@', elem['uuid'].strip()])
-    elem['mountpoint'] = ''
-    elem['fstype'] = ''
-    elem['size'] = int(elem['size'][:-1])  # Removes 'B' from the end of a size
-    elem['parents'] = []
-    elem['children'] = []
-    elem['encrypted'] = False
+    element['uuid'] = ''.join([element['name'], '@', element['uuid'].strip()])
+    element['mountpoint'] = ''
+    element['fstype'] = ''
+    element['size'] = int(element['size'][:-1])  # Removes 'B' from the end of a size
+    element['parents'] = []
+    element['children'] = []
+    element['encrypted'] = False
 
 
 def get_vgs():
@@ -171,10 +171,10 @@ def get_lv_from_lsblk(lv, lsblk_lvm):
     
     result = None
     
-    for elem in lsblk_lvm:
+    for element in lsblk_lvm:
         
-        if elem['name'] == key:
-            result = elem
+        if element['name'] == key:
+            result = element
             break
     
     return result

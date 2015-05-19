@@ -24,9 +24,9 @@ class InfoBox(Gtk.Box):
         
         actions.destroy_children(self)
         
-        elem = get_by_uuid(uuid,all_elements)
+        element = get_by_uuid(uuid,all_elements)
 
-        if elem:
+        if element:
             
             vbox_keys = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
             self.pack_start(vbox_keys, False, True, 0)
@@ -38,30 +38,30 @@ class InfoBox(Gtk.Box):
             for text in ['Name:','Type:','Size:']:
                 self.add_label(text, vbox_keys, 1)
 
-            name = '<b>%s</b>' %elem['label']['name']
+            name = '<b>%s</b>' %element['label']['name']
             self.add_label(name, vbox_values, 0)
             
-            text_type = elem['label']['type']['long']
-            if elem['type'] in ['pv','lv']:
-                text_type += ' - in volume group %s' %elem['vg_name']
+            text_type = element['label']['type']['long']
+            if element['type'] in ['pv','lv'] and element['vg_name']:
+                text_type += ' - in volume group %s' %element['vg_name']
             self.add_label(text_type, vbox_values, 0)
             
-            self.add_label(elem['label']['size'], vbox_values)
+            self.add_label(element['label']['size'], vbox_values)
             
             
-            if elem['label']['content']:
+            if element['label']['content']:
                 self.add_label('Content:', vbox_keys, 1)
-                self.add_label(elem['label']['content'], vbox_values)
+                self.add_label(element['label']['content'], vbox_values)
             
 
 #             self.add_label('uuid:', vbox_keys, 1)
-#             self.add_label(elem['uuid'], vbox_values)
+#             self.add_label(element['uuid'], vbox_values)
 #             
 #             self.add_label('Parents:', vbox_keys, 1)
-#             self.add_label(str(elem['parents']), vbox_values)
+#             self.add_label(str(element['parents']), vbox_values)
 #             
 #             self.add_label('Children:', vbox_keys, 1)
-#             self.add_label(str(elem['children']), vbox_values)
+#             self.add_label(str(element['children']), vbox_values)
 
 
         self.show_all()

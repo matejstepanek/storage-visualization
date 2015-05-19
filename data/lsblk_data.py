@@ -40,13 +40,13 @@ def get_lsblk_elements(pvs):
     
     lsblk_with_pvs = build_dependency_tree(devices, pvs)
             
-    for elem in lsblk_with_pvs:
+    for element in lsblk_with_pvs:
         
         mounted = get_mounted()
-        set_occupied_space(elem, lsblk_with_pvs, mounted)
+        set_occupied_space(element, lsblk_with_pvs, mounted)
         
-        if elem['type'] != 'lvm':
-            utils.set_label(elem)
+        if element['type'] != 'lvm':
+            utils.set_label(element)
 
     return lsblk_with_pvs
 
@@ -312,28 +312,28 @@ def skip_encryption(elements):
     copy_elements = list(elements)
     encryptions = []
     
-    for elem in elements:
+    for element in elements:
         
-        if elem['encrypted'] and elem['children']:
-            crypt = utils.get_by_uuid(elem['children'][0],copy_elements)
+        if element['encrypted'] and element['children']:
+            crypt = utils.get_by_uuid(element['children'][0],copy_elements)
             
             if crypt:
-                elem['mountpoint'] = crypt['mountpoint']
-                elem['fstype'] = crypt['fstype']
-                elem['children'] = crypt['children']
+                element['mountpoint'] = crypt['mountpoint']
+                element['fstype'] = crypt['fstype']
+                element['children'] = crypt['children']
                 
                 encryptions.append(crypt['uuid'])
                 
-                for child_uuid in elem['children']:
+                for child_uuid in element['children']:
                     
                     child = utils.get_by_uuid(child_uuid, elements)
                     
                     if child:    
                         child['parents'].remove(crypt['uuid'])
-                        child['parents'].append(elem['uuid'])
+                        child['parents'].append(element['uuid'])
                 
-        elif elem['encrypted']:
-            elem['fstype'] = ''
+        elif element['encrypted']:
+            element['fstype'] = ''
             
-    return [elem for elem in elements if elem['uuid'] not in encryptions]
+    return [element for element in elements if element['uuid'] not in encryptions]
 
