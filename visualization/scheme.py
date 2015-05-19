@@ -20,7 +20,7 @@ class SchemeBox(Gtk.Box):
     def __init__(self, main_window, all_elements, pvs, vgs, lvs, disks_loops):
         
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL,
-                         margin_top=40, margin_bottom=40,
+                         margin_top=40, margin_bottom=30,
                          margin_left=10, margin_right=10,
                          halign=Gtk.Align.CENTER)
         

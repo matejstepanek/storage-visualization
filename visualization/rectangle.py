@@ -7,11 +7,11 @@ Rectangle representing one storage element.
 '''
 
 from gi.repository import Gtk, Pango, Gdk #@UnresolvedImport
-import subprocess
 
 from icons import Icons
 from data.utils import get_by_uuid
-import visualization.actions as actions
+import actions
+import menus
 
 
 MIN_WIDTH = 110
@@ -107,14 +107,14 @@ class Rectangle(Gtk.Button):
         
         icons = Icons(self.all_elements)
         icon = icons.assign_icon(element)
-            
-        if icon:
-            image = Gtk.Image.new_from_pixbuf(icon)        
-            box.pack_start(image, False, False, 0)
-            
+        
         if element['encrypted']:
             image_crypt = Gtk.Image.new_from_pixbuf(icons.crypt)
             box.pack_start(image_crypt, False, False, 0)
+                
+        if icon:
+            image = Gtk.Image.new_from_pixbuf(icon)        
+            box.pack_start(image, False, False, 0)
             
 
     def set_color_box(self, hbox):
@@ -143,81 +143,36 @@ class Rectangle(Gtk.Button):
 ####### ON RECTANGLE PRESS ####################################################
 
     def on_button_press(self, widget, event):
-
+        """ Double left click - show dependencies.
+            Single click - clear dependencies, higlight this rectangle.
+                if right click - show popup menu.
+        """
+        
         element = get_by_uuid(self.uuid, self.all_elements)
         
-        if event.button == 3:   # 3 means right mouse button
+        if event.button == 3:  # right click
             
-            if element['name'] == 'loop3' and element['type'] == 'loop':
+            actions.clear_dependencies(self.main_window)
 
-                self.menu = Gtk.Menu()
-                menuitem1 = Gtk.MenuItem('Format')
-                menuitem2 = Gtk.MenuItem('Encrypt')
-                menuitem3 = Gtk.MenuItem('Create PV')
-                menuitem4 = Gtk.MenuItem('Detach')
-                self.menu.append(menuitem1)
-                self.menu.append(menuitem2)
-                self.menu.append(menuitem3)
-                self.menu.append(menuitem4)
-                self.menu.connect('button-press-event', self.pvcreate)
+            self.main_window.scheme_box.rectangles[self.uuid].emit('activate')
 
-                self.menu.popup(None, None, None, None, event.button, event.time)
-                self.menu.show_all()
-                
-                
-            elif element['label']['name'] == 'loop3' and element['type'] == 'pv':
-                
-                self.menu = Gtk.Menu()
-                menuitem1 = Gtk.MenuItem('Add to VG alpha')
-                menuitem2 = Gtk.MenuItem('Add to VG fedora')
-                menuitem3 = Gtk.MenuItem('Remove')
-                self.menu.append(menuitem1)
-                self.menu.append(menuitem2)
-                self.menu.append(menuitem3)
-                self.menu.connect('button-press-event', self.vgextend)
-
-                self.menu.popup(None, None, None, None, event.button, event.time)
-                self.menu.show_all()
-                 
-            elif element['name'] == 'sda':
-                
-                subprocess.check_output(['sudo', 'vgreduce', 'alpha', '/dev/loop3'])
-                subprocess.check_output(['sudo', 'pvremove', '/dev/loop3'])
-                self.main_window.__init__()
+            self.main_window.scheme_box.rectangles[self.uuid].emit('focus', False)
+             
+            self.main_window.info_box.__init__(self.all_elements, self.uuid)
             
-            else:
-                actions.clear_dependencies(self.main_window)
+            self.menu = menus.get_menu(element, self.main_window)
+            self.menu.popup(None, None, None, None, event.button, event.time)
 
-                self.main_window.scheme_box.rectangles[self.uuid].emit('activate')
-
-                self.main_window.scheme_box.rectangles[self.uuid].emit('focus', False)
-                 
-                self.main_window.info_box.__init__(self.all_elements, self.uuid)
-                
-                self.menu = actions.Menu(element, self.main_window)
-                self.menu.popup(None, None, None, None, event.button, event.time)
-
-                
-        elif event.type == Gdk.EventType._2BUTTON_PRESS:    # double click
+            
+        elif event.type == Gdk.EventType._2BUTTON_PRESS:  # double click
             self.draw_dependencies()
+            
             
         else:
             actions.clear_dependencies(self.main_window)
             self.main_window.info_box.__init__(self.all_elements, self.uuid)
     
-    
-    def pvcreate(self, widget, event):
-        
-        subprocess.check_output(['sudo', 'pvcreate', '/dev/loop3'])
-        self.main_window.__init__()
-        
 
-    def vgextend(self, widget, event):
-        
-        subprocess.check_output(['sudo', 'vgextend', 'alpha', '/dev/loop3'])
-        self.main_window.__init__()
-    
-        
     def draw_dependencies(self):
         """Highlights all rectangles that are dependent on the pressed one.
         """

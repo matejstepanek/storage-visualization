@@ -32,7 +32,7 @@ class MainWindow(Gtk.Window):
         self.set_css_styles()
         
         elems = Elements()
-
+        self.all_elements = elems.all_elements
 
         paned = Gtk.Paned()
         self.add(paned)
@@ -85,6 +85,8 @@ class MainWindow(Gtk.Window):
 
 
     def on_button_press(self, widget, event):
+        """Click anywhere in GUI removes highlighting of element dependencies.
+        """
         
         if event.button == 1 and event.type == Gdk.EventType.BUTTON_PRESS:
             

@@ -3,10 +3,8 @@ Created: 2015
 
 @author: mstepane@redhat.com
 
-Actions to perform when various signals are emitted.
+Actions to perform when various signals are emitted or menu items activated.
 '''
-
-from gi.repository import Gtk   #@UnresolvedImport
 
 
 def destroy_children(widget):
@@ -31,36 +29,77 @@ def clear_dependencies(main_window):
             rec.set_name('Rectangle')
 
 
-class Menu(Gtk.Menu):
-    """Popup context menu for storage elements.
-    """
+def create_pv(menu_item, element):
+        
+    print 'Creating pv', element['label']['name']
+
+
+def create_vg(menu_item, pv):
     
-    def __init__(self, element, main_window):
-
-        Gtk.Menu.__init__(self)
-        
-        self.main_window = main_window
-        
-        items = [('Action 1', self.first),
-                 ('Action 2', self.second)]
-        
-        for item in items:
-            
-            menu_item = Gtk.MenuItem(item[0])
-            menu_item.connect('activate', item[1])
-            self.add(menu_item)
-
-        self.show_all()
+    print 'Creating new volume group on physical volume', pv['label']['name']
     
     
-    def first(self, menu_item):
+def create_lv(menu_item, vg):
+    
+    print 'Creating logical volume in volume group', vg['name']
+    
+
+def create_thin_lv(menu_item, pool):
+    
+    print 'Creating thin logical volume in thin pool', pool['name']
+    
+
+def create_snapshot(menu_item, element):
+    
+    print 'Creating snapshot of logical volume', element['label']['name']
+    
+
+def vg_extend(menu_item, vg):
+    
+    print 'Extending volume group %s with physical volume' %vg['name']
+    
+
+def vg_reduce(menu_item, vg):
+    
+    print 'Removing physical volume from volume group', vg['name']
+
+
+def remove_pv_from_vg(menu_item, pv):
+    
+    print 'Removing pv %s from vg %s' %(pv['label']['name'], pv['vg_name'])
+
+
+def add_pv_to_vg(menu_item, element):
+    
+    print 'Adding pv %s to volume group' %element['label']['name']
+
+
+def remove_element(menu_item, element):
+    
+    print 'Removing element', element['label']['name']
         
-        self.main_window.__init__()
-        print 'Action 1'
 
+def format_element(menu_item, element):
+    
+    print 'Formating', element['label']['name']
+    
 
-    def second(self, menu_item):
-        
-        self.main_window.__init__()                   
-        print 'Action 2'
+def mount_file_system(menu_item, element):
+    
+    print 'Mounting fs on', element['label']['name']
+    
 
+def unmount_file_system(menu_item, element):
+    
+    print 'Unmounting fs on', element['label']['name']
+    
+
+def remove_encryption(menu_item, element):
+    
+    print 'Removing encryption from', element['label']['name']
+    
+
+def encrypt(menu_item, element):
+    
+    print 'Encrypting', element['label']['name']
+    

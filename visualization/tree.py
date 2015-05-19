@@ -10,7 +10,8 @@ from gi.repository import Gtk, Gdk, GdkPixbuf   #@UnresolvedImport
 
 from data.utils import get_by_uuid
 from icons import Icons
-import visualization.actions as actions
+import actions
+import menus
 
 
 class TreeBox(Gtk.Box):
@@ -19,47 +20,51 @@ class TreeBox(Gtk.Box):
     
     def __init__(self, main_window, all_elements, disks_loops, vgs):
         
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL,
+                         width_request=280)
         
         actions.destroy_children(self)
         
         self.icons = Icons(all_elements)
-        mountpoints = self.get_mountpoints(all_elements)
+#         mountpoints = self.get_mountpoints(all_elements)
         
         stack = Gtk.Stack()
         
-        store_disks = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str)
-        self.populate_store(store_disks, disks_loops, all_elements, 'name')
-        view_disks = self.get_tree_view(store_disks, all_elements, main_window)
+        store_disks = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str)
+        self.populate_store(store_disks, disks_loops, all_elements, 'Type')
+        view_disks = self.get_tree_view(store_disks, all_elements, main_window,
+                                        'Type')
         stack.add_titled(view_disks, 'disks', 'Disks')
         
-        store_vgs = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str)
-        self.populate_store(store_vgs, vgs, all_elements, 'name')
-        view_vgs = self.get_tree_view(store_vgs, all_elements, main_window)
+        store_vgs = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str)
+        self.populate_store(store_vgs, vgs, all_elements, 'Type')
+        view_vgs = self.get_tree_view(store_vgs, all_elements, main_window,
+                                      'Type')
         stack.add_titled(view_vgs, 'vgs', 'Volume groups')
         
-        store_mountpoints = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str)
-        self.populate_store(store_mountpoints, mountpoints, all_elements, 'mountpoint')
-        view_mountpoints = self.get_tree_view(store_mountpoints, all_elements, main_window)
-        stack.add_titled(view_mountpoints, 'mountpoints', 'Mount points')
+#         store_mountpoints = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str)
+#         self.populate_store(store_mountpoints, mountpoints, all_elements, 'Mountpoint')
+#         view_mountpoints = self.get_tree_view(store_mountpoints, all_elements,
+#                                               main_window, 'Mountpoint')
+#         stack.add_titled(view_mountpoints, 'mountpoints', 'Mount points')
         
         stack_switcher = Gtk.StackSwitcher(stack=stack)
         self.pack_start(stack_switcher, False, True, 0)
         self.pack_start(stack, True, True, 0)
         
 
-    def get_mountpoints(self, all_elements):
-        """Returns storage elements with mounted file systems.
-        """
-        
-        mountpoints = []
-        
-        for element in all_elements:
-            
-            if element['mountpoint']:
-                mountpoints.append(element)
-            
-        return mountpoints
+#     def get_mountpoints(self, all_elements):
+#         """Returns storage elements with mounted file systems.
+#         """
+#         
+#         mountpoints = []
+#         
+#         for element in all_elements:
+#             
+#             if element['mountpoint']:
+#                 mountpoints.append(element)
+#             
+#         return mountpoints
 
     
     def populate_store(self, store, roots, elements, info):
@@ -81,8 +86,15 @@ class TreeBox(Gtk.Box):
         
         icon = self.icons.assign_icon(element)
         
-        text = element[info]
-        new_parent_row = store.append(parent_row,[icon, text, element['uuid']])
+        if info == 'Type':
+            text = '%s' %element['label']['type']['short']
+            if element['type'] == 'pv' and element['vg_name']:
+                text += ' in VG %s' %element['vg_name']
+        else:
+            text = element['mountpoint'] 
+        
+        new_parent_row = store.append(parent_row,[icon, element['label']['name'],
+                                                  text, element['uuid']])
         
         return new_parent_row
         
@@ -95,7 +107,7 @@ class TreeBox(Gtk.Box):
                 
                 child = get_by_uuid(child_uuid, elements)
                 
-                if child and child['type'] != 'pv':
+                if child and child['type'] != 'vg':
                     new_parent_row = self.append_row(child, store, parent_row, info)
                 else:
                     break
@@ -104,20 +116,23 @@ class TreeBox(Gtk.Box):
                                                  new_parent_row, info)
     
 
-    def get_tree_view(self, tree_store, all_elements, main_window):
+    def get_tree_view(self, tree_store, all_elements, main_window, info):
         """Returns tree view based on the given tree store.
         """
         
         tree_view = TreeView(tree_store, all_elements, main_window)
-        tree_view.set_headers_visible(False)
         tree_view.set_enable_tree_lines(True)
         
         renderer_pixbuf = Gtk.CellRendererPixbuf()
-        column_pixbuf = Gtk.TreeViewColumn('', renderer_pixbuf, pixbuf=0)
+        column_pixbuf = Gtk.TreeViewColumn(None, renderer_pixbuf, pixbuf=0)
         tree_view.append_column(column_pixbuf)
         
         renderer_text = Gtk.CellRendererText()
-        column_text = Gtk.TreeViewColumn('', renderer_text, text=1)
+        column_text = Gtk.TreeViewColumn('Name', renderer_text, text=1)
+        tree_view.append_column(column_text)
+        
+        renderer_text = Gtk.CellRendererText()
+        column_text = Gtk.TreeViewColumn('Type', renderer_text, text=2)
         tree_view.append_column(column_text)
               
         scrolled_window_view = Gtk.ScrolledWindow()
@@ -139,11 +154,15 @@ class TreeView(Gtk.TreeView):
 
     
     def on_button_press(self, tree_view, event):
+        """Click on menu item:
+            if double left - highlight corresponding rectangle.
+            if right - show popup menu.
+        """
         
         actions.clear_dependencies(self.main_window)
         self.main_window.info_box.__init__(self.all_elements)
         
-        if event.type == Gdk.EventType._2BUTTON_PRESS:    # double click
+        if event.type == Gdk.EventType._2BUTTON_PRESS:  # double left click
 
             row = tree_view.get_path_at_pos(int(event.x), int(event.y))    
             
@@ -153,9 +172,9 @@ class TreeView(Gtk.TreeView):
                 
                 self.main_window.info_box.__init__(self.all_elements, uuid)
                 actions.clear_dependencies(self.main_window)
-                self.main_window.scheme_box.rectangles[uuid].set_name('Focused')
+                self.main_window.scheme_box.rectangles[uuid].emit('focus', False)
                 
-        elif event.button == 3:
+        elif event.button == 3:  # right click
             
             row = tree_view.get_path_at_pos(int(event.x), int(event.y))    
             
@@ -164,7 +183,7 @@ class TreeView(Gtk.TreeView):
                 uuid = self.get_uuid(row[0], tree_view)
                 element = get_by_uuid(uuid, self.all_elements)
                 
-                self.menu = actions.Menu(element, self.main_window)
+                self.menu = menus.get_menu(element, self.main_window)
                 self.menu.popup(None, None, None, None, event.button, event.time)
             
 
@@ -174,7 +193,7 @@ class TreeView(Gtk.TreeView):
         
         tree_store = tree_view.get_model()
         iterator = tree_store.get_iter(path)
-        uuid = tree_store.get_value(iterator,2)
+        uuid = tree_store.get_value(iterator,3)
         
         return uuid
 
