@@ -23,51 +23,30 @@ class TreeBox(Gtk.Box):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL,
                          width_request=280)
         
+        self.icons = Icons(all_elements)
+        
         actions.destroy_children(self)
         
-        self.icons = Icons(all_elements)
-#         mountpoints = self.get_mountpoints(all_elements)
         
         stack = Gtk.Stack()
         
         store_disks = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str)
-        self.populate_store(store_disks, disks_loops, all_elements, 'Type')
-        view_disks = self.get_tree_view(store_disks, all_elements, main_window,
-                                        'Type')
+        self.populate_store(store_disks, disks_loops, all_elements)
+        view_disks = self.get_tree_view(store_disks, all_elements, main_window)
         stack.add_titled(view_disks, 'disks', 'Disks')
         
         store_vgs = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str)
-        self.populate_store(store_vgs, vgs, all_elements, 'Type')
-        view_vgs = self.get_tree_view(store_vgs, all_elements, main_window,
-                                      'Type')
+        self.populate_store(store_vgs, vgs, all_elements)
+        view_vgs = self.get_tree_view(store_vgs, all_elements, main_window)
         stack.add_titled(view_vgs, 'vgs', 'Volume groups')
         
-#         store_mountpoints = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str)
-#         self.populate_store(store_mountpoints, mountpoints, all_elements, 'Mountpoint')
-#         view_mountpoints = self.get_tree_view(store_mountpoints, all_elements,
-#                                               main_window, 'Mountpoint')
-#         stack.add_titled(view_mountpoints, 'mountpoints', 'Mount points')
-        
+      
         stack_switcher = Gtk.StackSwitcher(stack=stack)
         self.pack_start(stack_switcher, False, True, 0)
         self.pack_start(stack, True, True, 0)
         
-
-#     def get_mountpoints(self, all_elements):
-#         """Returns storage elements with mounted file systems.
-#         """
-#         
-#         mountpoints = []
-#         
-#         for element in all_elements:
-#             
-#             if element['mountpoint']:
-#                 mountpoints.append(element)
-#             
-#         return mountpoints
-
     
-    def populate_store(self, store, roots, elements, info):
+    def populate_store(self, store, roots, elements):
         """Populates tree store with data.
         
         Roots are added at first and then other layers.
@@ -75,23 +54,21 @@ class TreeBox(Gtk.Box):
         
         for root in roots:
             
-            parent_row = self.append_row(root, store, None, info)
+            parent_row = self.append_row(root, store, None)
             
-            self.recursively_append_children(root, elements, store, parent_row, info)
+            self.recursively_append_children(root, elements, store, parent_row)
 
 
-    def append_row(self, element, store, parent_row, info): 
+    def append_row(self, element, store, parent_row): 
         """Appends row with a given element.
         """
         
         icon = self.icons.assign_icon(element)
         
-        if info == 'Type':
-            text = '%s' %element['label']['type']['short']
-            if element['type'] == 'pv' and element['vg_name']:
-                text += ' in VG %s' %element['vg_name']
-        else:
-            text = element['mountpoint'] 
+        text = '%s' %element['label']['type']['short']
+        
+        if element['type'] == 'pv' and element['vg_name']:
+            text += ' in VG %s' %element['vg_name']
         
         new_parent_row = store.append(parent_row,[icon, element['label']['name'],
                                                   text, element['uuid']])
@@ -99,7 +76,7 @@ class TreeBox(Gtk.Box):
         return new_parent_row
         
     
-    def recursively_append_children(self, parent, elements, store, parent_row, info):
+    def recursively_append_children(self, parent, elements, store, parent_row):
         """Appends all children of a given parent element.
         """
         
@@ -108,15 +85,15 @@ class TreeBox(Gtk.Box):
                 child = get_by_uuid(child_uuid, elements)
                 
                 if child and child['type'] != 'vg':
-                    new_parent_row = self.append_row(child, store, parent_row, info)
+                    new_parent_row = self.append_row(child, store, parent_row)
                 else:
                     break
                 
                 self.recursively_append_children(child, elements, store,
-                                                 new_parent_row, info)
+                                                 new_parent_row)
     
 
-    def get_tree_view(self, tree_store, all_elements, main_window, info):
+    def get_tree_view(self, tree_store, all_elements, main_window):
         """Returns tree view based on the given tree store.
         """
         
