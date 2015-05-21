@@ -24,7 +24,7 @@ class MainWindow(Gtk.Window):
         """
         
         Gtk.Window.__init__(self, default_width=1300, default_height=700, 
-                            width_request=400, height_request=400,
+                            width_request=280, height_request=500,
                             border_width=5, title='storage visualization')
         
         actions.destroy_children(self)
@@ -32,13 +32,13 @@ class MainWindow(Gtk.Window):
         self.set_css_styles()
         
         
-        elems = Elements()
+        elements = Elements()
         
-        self.all_elements = elems.all_elements
-        self.disks_loops = elems.disks_loops
-        self.pvs = elems.pvs
-        self.vgs = elems.vgs
-        self.lvs = elems.lvs
+        self.all_elements = elements.all_elements
+        self.disks_loops = elements.disks_loops
+        self.pvs = elements.pvs
+        self.vgs = elements.vgs
+        self.lvs = elements.lvs
 
 
         paned = Gtk.Paned()
@@ -56,19 +56,15 @@ class MainWindow(Gtk.Window):
         scrolled_window_scheme.set_name('White')
         main_box.pack_start(scrolled_window_scheme, True, True, 0)
         
-        scrolled_window_info = Gtk.ScrolledWindow(height_request=110,
-                                    vscrollbar_policy=Gtk.PolicyType.NEVER)
-        main_box.pack_start(scrolled_window_info, False, False, 0)
+        centering_info = Gtk.Alignment(xalign=0.5)
+        main_box.pack_start(centering_info, False, False, 0)
         
         
         self.scheme_box = SchemeBox(self)
-        scrolled_window_scheme.add(self.scheme_box)        
-
-        centering = Gtk.Alignment(xalign=0.5)
-        scrolled_window_info.add(centering)
+        scrolled_window_scheme.add(self.scheme_box)
         
         self.info_box = InfoBox(self.all_elements)
-        centering.add(self.info_box)
+        centering_info.add(self.info_box)
         
         
         self.connect('delete-event', Gtk.main_quit)

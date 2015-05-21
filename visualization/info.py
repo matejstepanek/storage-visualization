@@ -3,7 +3,7 @@ Created: 2015
 
 @author: mstepane@redhat.com
 
-Box with information about a selected storage element.
+Box with information about the selected storage element.
 '''
 
 from gi.repository import Gtk #@UnresolvedImport
@@ -13,13 +13,14 @@ import visualization.actions as actions
 
 
 class InfoBox(Gtk.Box):
-    """Box with information about a selected storage element.
+    """Box with information about the selected storage element.
     """
     
-        
+
     def __init__(self, all_elements, uuid=None):
         
-        Gtk.Box.__init__(self, halign=Gtk.Align.CENTER, spacing=5, margin_top=13,
+        Gtk.Box.__init__(self, halign=Gtk.Align.CENTER, height_request=90,
+                         spacing=5, margin_top=10,
                          margin_left=10, margin_right=10)
         
         actions.destroy_children(self)
