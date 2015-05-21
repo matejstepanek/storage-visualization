@@ -13,11 +13,15 @@ from data.utils import get_by_uuid
 
 class LogicalArea(Gtk.Box):
     """Area with lvm elements: physical volumes, volume groups, logical volumes.
+    
+    Volume groups are ordered according to disks. (VG on the most left disk
+    is the most left.)
     """
     
-    def __init__(self, scheme, main_window):
+    def __init__(self, scheme, main_window, ordered_pvs):
         
-        Gtk.Box.__init__(self, halign=Gtk.Align.CENTER, spacing=scheme.H_GAP_BIG)
+        Gtk.Box.__init__(self, spacing=scheme.H_GAP_BIG)
+        
         
         pvs = main_window.pvs
         vgs = main_window.vgs
@@ -31,8 +35,12 @@ class LogicalArea(Gtk.Box):
         self.lv_rows = {}
         thin_rows = {}
         
-
-        for vg in vgs:
+        
+        ordered_vgs = self.get_ordered_vgs(ordered_pvs, vgs)
+        
+        for vg_uuid in ordered_vgs:
+            
+            vg = get_by_uuid(vg_uuid, vgs)
             
             vg_name = vg['name']
             
@@ -127,3 +135,26 @@ class LogicalArea(Gtk.Box):
             else:
                 scheme.add_rectangle(pv, pv_rows['@no vg'])
 
+
+    def get_ordered_vgs(self, ordered_pvs, vgs):
+        """Given ordered pvs returns ordered vgs.
+        
+        First pv in the list is on the most left disk in the scheme. We want
+        volume groups to be in the same order. That means vg on the most left
+        disk is added first.
+        """
+        
+        ordered_vgs = []
+        
+        for pv in ordered_pvs:
+            
+            if pv['children']:
+                vg_uuid = pv['children'][0]
+                
+                if vg_uuid not in ordered_vgs:
+                    ordered_vgs.append(vg_uuid)
+        
+        return ordered_vgs
+
+
+        

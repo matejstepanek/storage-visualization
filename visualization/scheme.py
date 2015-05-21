@@ -15,14 +15,25 @@ import rectangle
 
 class SchemeBox(Gtk.Box):
     """Scheme of storage layers.
+    
+    Physical area:
+        1. disks
+        2. partitions
+    -----------------------------
+        3. md raids
+    -----------------------------
+    Logical area:
+        1. physical volumes
+        2. volume groups
+        3. logical volumes, thin pools
+        4. thin logical volumes
     """
     
     def __init__(self, main_window):
         
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL,
                          margin_top=40, margin_bottom=30,
-                         margin_left=10, margin_right=10,
-                         halign=Gtk.Align.CENTER)
+                         margin_left=30, margin_right=30)
         
         self.main_window = main_window
         
@@ -45,8 +56,9 @@ class SchemeBox(Gtk.Box):
         separator = Gtk.Separator(margin_top=self.V_GAP_BIG,
                                   margin_bottom=self.V_GAP_BIG)
         self.pack_start(separator, False, False, 0)
-           
-        logical_area = LogicalArea(self, main_window)
+        
+        ordered_pvs = physical_area.ordered_pvs
+        logical_area = LogicalArea(self, main_window, ordered_pvs)
         self.pack_start(logical_area, False, False, 0)
         
 
@@ -58,7 +70,7 @@ class SchemeBox(Gtk.Box):
         """
         
         uuid = element['uuid']
-        
+
         self.rectangles[uuid] = rectangle.Rectangle(element, self.main_window)
         
         self.rectangles[uuid].set_name(uuid)
@@ -81,6 +93,9 @@ class SchemeBox(Gtk.Box):
     
     def set_color(self, element_name, widget):
         """Sets color of a given widget. (For snapshots and their origins.)
+        
+        Rectangles representing snaphots and their origins are tagged with
+        the strip of the same color.
         """
         
         if element_name in self.color_pairs:

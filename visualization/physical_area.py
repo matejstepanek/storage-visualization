@@ -14,21 +14,22 @@ from data.utils import get_by_uuid
 
 class PhysicalArea(Gtk.Box):
     """Area with disks, partitions and md raids.
+    
+    Disks are alphabetically ordered. 
     """
     
     def __init__(self, scheme, main_window):
         
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL,
-                         spacing=scheme.V_GAP_SMALL)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
         
         
-        disks_partitions_box = Gtk.Box(halign=Gtk.Align.CENTER,
-                                       spacing=scheme.H_GAP_BIG)
+        disks_partitions_box = Gtk.Box(spacing=scheme.H_GAP_BIG)
         self.pack_start(disks_partitions_box, False, False, 0)
         
         self.md_raid_present = False
         self.md_raids_added = []
         
+        self.ordered_pvs = []
         
         for disk in main_window.disks_loops:
             
@@ -47,6 +48,7 @@ class PhysicalArea(Gtk.Box):
                 
                 if element:
                     if element['type'] == 'pv':
+                        self.ordered_pvs.append(element)
                         break
                     elif element['type'] == 'part':
                         scheme.add_rectangle(element, part_row)
@@ -60,6 +62,7 @@ class PhysicalArea(Gtk.Box):
                         
                         if element2:
                             if element2['type'] == 'pv':
+                                self.ordered_pvs.append(element2)
                                 break
                             
                             self.add_raid(element2, scheme)
@@ -75,8 +78,7 @@ class PhysicalArea(Gtk.Box):
                                        margin_bottom=scheme.V_GAP_BIG)
             self.pack_start(separator, False, False, 0)
             
-            self.mdraids_row = Gtk.Box(halign=Gtk.Align.CENTER,
-                                  spacing=scheme.H_GAP_BIG)
+            self.mdraids_row = Gtk.Box(spacing=scheme.H_GAP_BIG)
             self.pack_start(self.mdraids_row, False, False, 0)
             
             self.md_raid_present = True
