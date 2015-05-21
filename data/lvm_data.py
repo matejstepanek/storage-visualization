@@ -137,9 +137,6 @@ def get_lvs(lsblk_lvm, pvs):
     
     for lv in lvs:
         
-        if lv['segtype'] == 'cache':
-            add_cache_pool_to_standard(lv, internal, standard)
-        
         utils.set_label(lv, internal)
     
     return (standard, internal)
@@ -213,15 +210,4 @@ def tag_origins(lvs):
             if origin and origin not in tagged_origins:
                 origin['is_origin'] = True
                 tagged_origins.append(origin)
-
-
-def add_cache_pool_to_standard(lv, internal, standard):
-    """We don't display internal logical volumes. [in brackets]
-    Cache pool is internal logical volume, but we want to display it.
-    So we add it to the list of standard logical volumes.
-    """
-    
-    cache_pool = utils.get_by_name(lv['pool_lv'], internal)
-    if cache_pool:
-        standard.append(cache_pool)
 

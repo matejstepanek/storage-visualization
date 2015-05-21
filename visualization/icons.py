@@ -27,7 +27,8 @@ class Icons:
         self.fs = pixbuf.new_from_file_at_size('graphics/fs.jpg', 9, 9) 
         self.crypt = pixbuf.new_from_file_at_size('graphics/crypt.png', 10, 12)
         self.menu = pixbuf.new_from_file_at_size('graphics/menu.png', 13, 13)
-        
+        self.cache = pixbuf.new_from_file_at_size('graphics/cache.png', 10, 10)
+    
     
     def assign_icon(self, elem):
         """Given a storage element returns appropriate icon.
@@ -51,10 +52,9 @@ class Icons:
             else:
                 icon = None
         
-        elif short_type in ['Cache', 'VG'] or short_type.startswith('Thin pool'):
+        elif short_type == 'VG' or short_type.startswith('Thin pool'):
             icon = None
         
         
         return icon
-    
-    
+

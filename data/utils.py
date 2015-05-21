@@ -162,11 +162,7 @@ def set_label_type_lv(element, internal_lvs):
          
     if type_lv == 'cache':
         element['label']['type']['short'] = 'LV with cache'
-        element['label']['type']['long']  = 'Logical volume with cache %s' %(
-                                                            element['pool_lv'])
-    elif type_lv == 'cache-pool':
-        element['label']['type']['short'] = 'Cache'
-        element['label']['type']['long']  = 'Cache'
+        element['label']['type']['long']  = 'Logical volume with cache'
     
     elif type_lv == 'thin-pool':
         element['label']['type']['short'] = 'Thin pool'
