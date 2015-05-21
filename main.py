@@ -31,8 +31,15 @@ class MainWindow(Gtk.Window):
         
         self.set_css_styles()
         
+        
         elems = Elements()
+        
         self.all_elements = elems.all_elements
+        self.disks_loops = elems.disks_loops
+        self.pvs = elems.pvs
+        self.vgs = elems.vgs
+        self.lvs = elems.lvs
+
 
         paned = Gtk.Paned()
         self.add(paned)
@@ -41,27 +48,26 @@ class MainWindow(Gtk.Window):
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         paned.pack1(main_box, True, True)
 
-        tree_box = TreeBox(self, elems.all_elements, elems.disks_loops, elems.vgs)
+        tree_box = TreeBox(self)
         paned.pack2(tree_box, False, True)
 
 
-        scrolled_scheme_window = Gtk.ScrolledWindow()
-        scrolled_scheme_window.set_name('White')
-        main_box.pack_start(scrolled_scheme_window, True, True, 0)
+        scrolled_window_scheme = Gtk.ScrolledWindow()
+        scrolled_window_scheme.set_name('White')
+        main_box.pack_start(scrolled_window_scheme, True, True, 0)
         
-        scrolled_info_window = Gtk.ScrolledWindow(height_request=110,
+        scrolled_window_info = Gtk.ScrolledWindow(height_request=110,
                                     vscrollbar_policy=Gtk.PolicyType.NEVER)
-        main_box.pack_start(scrolled_info_window, False, False, 0)
+        main_box.pack_start(scrolled_window_info, False, False, 0)
         
         
-        self.scheme_box = SchemeBox(self, elems.all_elements, elems.pvs,
-                                    elems.vgs, elems.lvs, elems.disks_loops)
-        scrolled_scheme_window.add(self.scheme_box)        
+        self.scheme_box = SchemeBox(self)
+        scrolled_window_scheme.add(self.scheme_box)        
 
         centering = Gtk.Alignment(xalign=0.5)
-        scrolled_info_window.add(centering)
+        scrolled_window_info.add(centering)
         
-        self.info_box = InfoBox(elems.all_elements)
+        self.info_box = InfoBox(self.all_elements)
         centering.add(self.info_box)
         
         

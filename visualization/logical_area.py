@@ -15,9 +15,14 @@ class LogicalArea(Gtk.Box):
     """Area with lvm elements: physical volumes, volume groups, logical volumes.
     """
     
-    def __init__(self, scheme, all_elements, pvs, vgs, lvs):
+    def __init__(self, scheme, main_window):
         
         Gtk.Box.__init__(self, halign=Gtk.Align.CENTER, spacing=scheme.H_GAP_BIG)
+        
+        pvs = main_window.pvs
+        vgs = main_window.vgs
+        lvs = main_window.lvs
+        
         
         vg_boxes_plus = {}
         vg_alingment = {}

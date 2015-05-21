@@ -18,10 +18,14 @@ class TreeBox(Gtk.Box):
     """Box with tree structure of storage elements.
     """
     
-    def __init__(self, main_window, all_elements, disks_loops, vgs):
+    def __init__(self, main_window):
         
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL,
                          width_request=280)
+        
+        all_elements = main_window.all_elements
+        disks_loops = main_window.disks_loops
+        vgs = main_window.vgs
         
         self.icons = Icons(all_elements)
         
@@ -32,12 +36,12 @@ class TreeBox(Gtk.Box):
         
         store_disks = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str)
         self.populate_store(store_disks, disks_loops, all_elements)
-        view_disks = self.get_tree_view(store_disks, all_elements, main_window)
+        view_disks = self.get_tree_view(store_disks, main_window)
         stack.add_titled(view_disks, 'disks', 'Disks')
         
         store_vgs = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str)
         self.populate_store(store_vgs, vgs, all_elements)
-        view_vgs = self.get_tree_view(store_vgs, all_elements, main_window)
+        view_vgs = self.get_tree_view(store_vgs, main_window)
         stack.add_titled(view_vgs, 'vgs', 'Volume groups')
         
       
@@ -93,11 +97,11 @@ class TreeBox(Gtk.Box):
                                                  new_parent_row)
     
 
-    def get_tree_view(self, tree_store, all_elements, main_window):
+    def get_tree_view(self, tree_store, main_window):
         """Returns tree view based on the given tree store.
         """
         
-        tree_view = TreeView(tree_store, all_elements, main_window)
+        tree_view = TreeView(tree_store, main_window)
         tree_view.set_enable_tree_lines(True)
         
         renderer_pixbuf = Gtk.CellRendererPixbuf()
@@ -120,11 +124,11 @@ class TreeBox(Gtk.Box):
 
 class TreeView(Gtk.TreeView): 
     
-    def __init__(self, tree_store, all_elements, main_window):
+    def __init__(self, tree_store, main_window):
         
         Gtk.TreeView.__init__(self, tree_store)
         
-        self.all_elements = all_elements
+        self.all_elements = main_window.all_elements
         self.main_window = main_window
         
         self.connect('button-press-event', self.on_button_press)

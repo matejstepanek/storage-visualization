@@ -16,10 +16,11 @@ class PhysicalArea(Gtk.Box):
     """Area with disks, partitions and md raids.
     """
     
-    def __init__(self, scheme, all_elements, disks_loops):
+    def __init__(self, scheme, main_window):
         
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL,
                          spacing=scheme.V_GAP_SMALL)
+        
         
         disks_partitions_box = Gtk.Box(halign=Gtk.Align.CENTER,
                                        spacing=scheme.H_GAP_BIG)
@@ -29,7 +30,7 @@ class PhysicalArea(Gtk.Box):
         self.md_raids_added = []
         
         
-        for disk in disks_loops:
+        for disk in main_window.disks_loops:
             
             disk_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
                                spacing=scheme.V_GAP_SMALL)
@@ -42,7 +43,7 @@ class PhysicalArea(Gtk.Box):
             
             for element_uuid in disk['children']:
                 
-                element = get_by_uuid(element_uuid, all_elements)
+                element = get_by_uuid(element_uuid, main_window.all_elements)
                 
                 if element:
                     if element['type'] == 'pv':
@@ -55,7 +56,7 @@ class PhysicalArea(Gtk.Box):
                     
                     for element2_uuid in element['children']:
                         
-                        element2 = get_by_uuid(element2_uuid, all_elements)
+                        element2 = get_by_uuid(element2_uuid, main_window.all_elements)
                         
                         if element2:
                             if element2['type'] == 'pv':
@@ -73,7 +74,7 @@ class PhysicalArea(Gtk.Box):
             separator = Gtk.Separator(margin_top=scheme.V_GAP_BIG,
                                        margin_bottom=scheme.V_GAP_BIG)
             self.pack_start(separator, False, False, 0)
-             
+            
             self.mdraids_row = Gtk.Box(halign=Gtk.Align.CENTER,
                                   spacing=scheme.H_GAP_BIG)
             self.pack_start(self.mdraids_row, False, False, 0)

@@ -25,11 +25,11 @@ class Rectangle(Gtk.Button):
     __gtype_name__ = 'Rectangle'
     
     
-    def __init__(self, element, all_elements, main_window):
+    def __init__(self, element, main_window):
         """Initiates rectangle with appropriate size, icons and label.
         """
         
-        self.all_elements = all_elements
+        self.all_elements = main_window.all_elements
         self.main_window = main_window
         self.uuid = element['uuid']
         

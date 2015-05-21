@@ -17,20 +17,19 @@ class SchemeBox(Gtk.Box):
     """Scheme of storage layers.
     """
     
-    def __init__(self, main_window, all_elements, pvs, vgs, lvs, disks_loops):
+    def __init__(self, main_window):
         
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL,
                          margin_top=40, margin_bottom=30,
                          margin_left=10, margin_right=10,
                          halign=Gtk.Align.CENTER)
         
+        self.main_window = main_window
+        
         self.V_GAP_SMALL = 4
         self.V_GAP_BIG = 10
         self.H_GAP_SMALL = 4
         self.H_GAP_BIG = 15
-        
-        self.main_window = main_window
-        self.all_elements = all_elements
         
         self.color_pairs = {}
         self.colors = ['Orange', 'Chocolate', 'Chameleon', 'SkyBlue', 'Plum',
@@ -40,14 +39,14 @@ class SchemeBox(Gtk.Box):
         self.rectangles = {}
         
         
-        physical_area = PhysicalArea(self, all_elements, disks_loops)
+        physical_area = PhysicalArea(self, main_window)
         self.pack_start(physical_area, False, False, 0)
          
         separator = Gtk.Separator(margin_top=self.V_GAP_BIG,
                                   margin_bottom=self.V_GAP_BIG)
         self.pack_start(separator, False, False, 0)
            
-        logical_area = LogicalArea(self, all_elements, pvs, vgs, lvs)
+        logical_area = LogicalArea(self, main_window)
         self.pack_start(logical_area, False, False, 0)
         
 
@@ -60,8 +59,7 @@ class SchemeBox(Gtk.Box):
         
         uuid = element['uuid']
         
-        self.rectangles[uuid] = rectangle.Rectangle(element, self.all_elements,
-                                                    self.main_window)
+        self.rectangles[uuid] = rectangle.Rectangle(element, self.main_window)
         
         self.rectangles[uuid].set_name(uuid)
         
