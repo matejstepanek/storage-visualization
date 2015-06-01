@@ -136,7 +136,8 @@ class TreeView(Gtk.TreeView):
     
     def on_button_press(self, tree_view, event):
         """Click on menu item:
-            if double left - highlight corresponding rectangle.
+            if right or double left - highlight corresponding rectangle and
+                                      show information in InfoBox.
             if right - show popup menu.
         """
         
@@ -152,7 +153,6 @@ class TreeView(Gtk.TreeView):
                 uuid = self.get_uuid(row[0], tree_view)
                 
                 self.main_window.info_box.__init__(self.all_elements, uuid)
-                actions.clear_dependencies(self.main_window)
                 self.main_window.scheme_box.rectangles[uuid].emit('focus', False)
                 
         elif event.button == 3:  # right click
@@ -163,6 +163,8 @@ class TreeView(Gtk.TreeView):
                 
                 uuid = self.get_uuid(row[0], tree_view)
                 element = get_by_uuid(uuid, self.all_elements)
+                
+                self.main_window.info_box.__init__(self.all_elements, uuid)
                 
                 self.menu = menus.get_menu(element, self.main_window)
                 self.menu.popup(None, None, None, None, event.button, event.time)
