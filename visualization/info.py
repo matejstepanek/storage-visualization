@@ -9,7 +9,7 @@ Box with information about the selected storage element.
 from gi.repository import Gtk #@UnresolvedImport
 
 from data.utils import get_by_uuid
-import visualization.actions as actions
+import actions
 
 
 class InfoBox(Gtk.Box):

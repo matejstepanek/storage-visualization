@@ -27,7 +27,14 @@ class MainWindow(Gtk.Window):
                             width_request=280, height_request=500,
                             border_width=5, title='storage visualization')
         
-        actions.destroy_children(self)
+        
+        tree_box_width = 280
+        
+        if self.get_children():
+            tree_box_width = self.tree_box.get_allocated_width()
+            
+            actions.destroy_children(self)
+        
         
         self.set_css_styles()
         
@@ -48,8 +55,8 @@ class MainWindow(Gtk.Window):
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         paned.pack1(main_box, True, True)
 
-        tree_box = TreeBox(self)
-        paned.pack2(tree_box, False, True)
+        self.tree_box = TreeBox(self, tree_box_width)
+        paned.pack2(self.tree_box, False, True)
 
 
         scrolled_window_scheme = Gtk.ScrolledWindow()

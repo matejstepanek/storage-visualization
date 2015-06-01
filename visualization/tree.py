@@ -18,10 +18,10 @@ class TreeBox(Gtk.Box):
     """Box with tree structure of storage elements.
     """
     
-    def __init__(self, main_window):
+    def __init__(self, main_window, width=280):
         
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL,
-                         width_request=280)
+                         width_request=width)
         
         all_elements = main_window.all_elements
         disks_loops = main_window.disks_loops
