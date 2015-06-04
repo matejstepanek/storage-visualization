@@ -116,11 +116,7 @@ class Rectangle(Gtk.Button):
             image = Gtk.Image.new_from_pixbuf(icon)
             box.pack_start(image, False, False, 0)
         
-        if element['type'] == 'lv' and element['segtype'] == 'cache':
-            image_cache = Gtk.Image.new_from_pixbuf(icons.cache)
-            box.pack_start(image_cache, False, False, 0)
-            
-            
+                  
     def set_color_box(self, hbox):
         """Adds a color box for highlighting snapshots and their origins.
         """
