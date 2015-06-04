@@ -5,4 +5,4 @@ GUI for storage visualization (especially for displaying lvm elements organizati
 <b>usage:</b> python main.py
 
 
-So far only visualization works. Actions from popup menus are not implemented yet.
+Actions from popup menus are mostly not implemented.

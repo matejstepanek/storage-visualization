@@ -43,7 +43,7 @@ def get_menu(element, main_window):
 
 def get_item_format(element):
     
-    item = Gtk.MenuItem('Format')
+    item = Gtk.MenuItem('Format (not implemented)')
     item.connect('activate', actions.format_element, element)
     
     if element['children']:
@@ -52,10 +52,10 @@ def get_item_format(element):
     return item
     
     
-def get_item_create_pv(element):
+def get_item_create_pv(element, main_window):
     
     item = Gtk.MenuItem('Create physical volume')
-    item.connect('activate', actions.create_pv, element)
+    item.connect('activate', actions.create_pv, element, main_window)
     
     if element['children'] or element['fstype']:
         item.set_sensitive(False)
@@ -66,10 +66,10 @@ def get_item_create_pv(element):
 def get_item_mounting(element):
     
     if element['mountpoint']:
-        item = Gtk.MenuItem('Unmount file system')
+        item = Gtk.MenuItem('Unmount file system (not implemented)')
         item.connect('activate', actions.unmount_file_system, element)
     else:
-        item = Gtk.MenuItem('Mount file system')
+        item = Gtk.MenuItem('Mount file system (not implemented)')
         item.connect('activate', actions.mount_file_system, element)
     
     return item
@@ -78,10 +78,10 @@ def get_item_mounting(element):
 def get_item_encryption(element):
     
     if element['encrypted']:
-        item = Gtk.MenuItem('Remove encryption')
+        item = Gtk.MenuItem('Remove encryption (not implemented)')
         item.connect('activate', actions.remove_encryption, element)
     else:
-        item = Gtk.MenuItem('Encrypt')
+        item = Gtk.MenuItem('Encrypt (not implemented)')
         item.connect('activate', actions.encrypt, element)
     
     if element['children'] or element['fstype']:
@@ -90,10 +90,14 @@ def get_item_encryption(element):
     return item
 
 
-def get_item_remove(element):
+def get_item_remove(element, main_window):
     
-    item = Gtk.MenuItem('Remove')
-    item.connect('activate', actions.remove_element, element)
+    if element['type'] == 'pv':
+        item = Gtk.MenuItem('Remove')
+        item.connect('activate', actions.remove_element, element, main_window)
+    else:
+        item = Gtk.MenuItem('Remove (not implemented)')
+        item.connect('activate', actions.remove_element, element, main_window)
     
     if element['children']:
         item.set_sensitive(False)
@@ -108,7 +112,7 @@ class MenuDisk(Gtk.Menu):
         Gtk.Menu.__init__(self)
         
         
-        item = get_item_create_pv(disk)
+        item = get_item_create_pv(disk, main_window)
         self.add(item)
         
         item = get_item_format(disk)
@@ -132,7 +136,7 @@ class MenuPartRaid(Gtk.Menu):
         Gtk.Menu.__init__(self)
         
         
-        item = get_item_create_pv(element)
+        item = get_item_create_pv(element, main_window)
         self.add(item)
         
         item = get_item_format(element)
@@ -145,7 +149,7 @@ class MenuPartRaid(Gtk.Menu):
         item = get_item_encryption(element)
         self.add(item)
         
-        item = get_item_remove(element)
+        item = get_item_remove(element, main_window)
         self.add(item)
         
         
@@ -164,7 +168,7 @@ class MenuPV(Gtk.Menu):
             vg = get_by_name(pv['vg_name'], main_window.all_elements)
             
             item = Gtk.MenuItem('Remove from volume group ' + pv['vg_name'])
-            item.connect('activate', actions.remove_pv_from_vg, pv)
+            item.connect('activate', actions.remove_pv_from_vg, pv, main_window)
             
             if len(vg['parents']) <= 1:
                 item.set_sensitive(False)
@@ -172,15 +176,15 @@ class MenuPV(Gtk.Menu):
             self.add(item)
         
         else:
-            item = Gtk.MenuItem('Create volume group here')
+            item = Gtk.MenuItem('Create volume group here (not implemented)')
             item.connect('activate', actions.create_vg, pv)
             self.add(item)
             
             item = Gtk.MenuItem('Add to volume group')
-            item.connect('activate', actions.add_pv_to_vg, pv)
+            item.connect('activate', actions.add_pv_to_vg, pv, main_window)
             self.add(item)
    
-        item = get_item_remove(pv)
+        item = get_item_remove(pv, main_window)
         self.add(item)
         
         
@@ -194,30 +198,27 @@ class MenuVG(Gtk.Menu):
         Gtk.Menu.__init__(self)
         
         
-        item = Gtk.MenuItem('Create logical volume')
+        item = Gtk.MenuItem('Create logical volume (not implemented)')
         item.connect('activate', actions.create_lv, vg)
         if vg['occupied'] == 100:
             item.set_sensitive(False)
         self.add(item)
         
         item = Gtk.MenuItem('Add physical volume')
-        item.connect('activate', actions.vg_extend, vg)
+        item.connect('activate', actions.vg_extend, vg, main_window)
         self.add(item)
         
         item = Gtk.MenuItem('Remove physical volume')
-        item.connect('activate', actions.vg_reduce, vg)
+        item.connect('activate', actions.vg_reduce, vg, main_window)
         if len(vg['parents']) <= 1:
                 item.set_sensitive(False)
         self.add(item)
         
-        item = Gtk.MenuItem('Remove')
-        item.connect('activate', actions.remove_element, vg)
-        if vg['children']:
-            item.set_sensitive(False)
+        item = get_item_remove(vg, main_window)
         self.add(item)
         
         
-        self.show_all() 
+        self.show_all()
 
 
 class MenuLV(Gtk.Menu):
@@ -230,7 +231,7 @@ class MenuLV(Gtk.Menu):
         item = get_item_format(lv)
         self.add(item)
         
-        item = Gtk.MenuItem('Create snapshot')
+        item = Gtk.MenuItem('Create snapshot (not implemented)')
         item.connect('activate', actions.create_snapshot, lv)
         self.add(item)
         
@@ -241,7 +242,7 @@ class MenuLV(Gtk.Menu):
         item = get_item_encryption(lv)
         self.add(item)
         
-        item = get_item_remove(lv)
+        item = get_item_remove(lv, main_window)
         self.add(item)
         
         
@@ -255,13 +256,13 @@ class MenuPool(Gtk.Menu):
         Gtk.Menu.__init__(self)
         
         
-        item = Gtk.MenuItem('Create thin logical volume')
+        item = Gtk.MenuItem('Create thin logical volume (not implemented)')
         item.connect('activate', actions.create_thin_lv, pool)
         if pool['occupied'] == 100:
             item.set_sensitive(False)
         self.add(item)
         
-        item = get_item_remove(pool)
+        item = get_item_remove(pool, main_window)
         self.add(item)
         
         
