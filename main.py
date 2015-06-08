@@ -23,7 +23,7 @@ class MainWindow(Gtk.Window):
         """Draws a GUI.
         """
         
-        Gtk.Window.__init__(self, default_width=1300, default_height=700, 
+        Gtk.Window.__init__(self, default_width=1200, default_height=700, 
                             width_request=280, height_request=500,
                             border_width=5, title='storage visualization')
         
