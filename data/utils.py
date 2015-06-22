@@ -191,7 +191,7 @@ def set_label_type_lv(element, internal_lvs):
         element['label']['type']['short'] = 'LV'
         element['label']['type']['long']  = 'Logical volume'
      
-    if type_lv.startswith('raid'):
+    if type_lv.startswith('raid') or type_lv == 'striped':
             element['label']['type']['short'] += ', ' + type_lv
             element['label']['type']['long'] += ', ' + type_lv 
 
