@@ -40,10 +40,13 @@ def create_pv(menu_item, element, main_window):
 
     if response == 1:
         
-        output = subprocess.check_output(['sudo', 'pvcreate',
-                                          '/dev/%s' %element['name']])
-        print output
-        
+        try:
+            output = subprocess.check_output(['sudo', 'pvcreate',
+                                              '/dev/%s' %element['name']])
+            print output
+        except:
+            print 'Action pvcreate failed.'
+            
         main_window.__init__()
 
     dialog.destroy()
@@ -82,9 +85,12 @@ def vg_extend(menu_item, vg, main_window):
         
         pv_name = dialog.combo.get_active_text()
         
-        output = subprocess.check_output(['sudo', 'vgextend', vg['name'],
-                                          '/dev/'+pv_name])
-        print output
+        try:
+            output = subprocess.check_output(['sudo', 'vgextend', vg['name'],
+                                              '/dev/'+pv_name])
+            print output
+        except:
+            print 'Action vgextend failed.'
         
         main_window.__init__()
 
@@ -100,9 +106,12 @@ def vg_reduce(menu_item, vg, main_window):
         
         pv_name = dialog.combo.get_active_text()
         
-        output = subprocess.check_output(['sudo', 'vgreduce', vg['name'],
-                                          '/dev/'+pv_name])
-        print output
+        try:
+            output = subprocess.check_output(['sudo', 'vgreduce', vg['name'],
+                                              '/dev/'+pv_name])
+            print output
+        except:
+            print 'Action vgreduce failed.'
         
         main_window.__init__()
 
@@ -116,10 +125,13 @@ def remove_pv_from_vg(menu_item, pv, main_window):
 
     if response == 1:
         
-        output = subprocess.check_output(['sudo', 'vgreduce', pv['vg_name'],
-                                          pv['name']])
-        print output
-        
+        try:
+            output = subprocess.check_output(['sudo', 'vgreduce', pv['vg_name'],
+                                              pv['name']])
+            print output
+        except:
+            print 'Action vgreduce failed.'
+            
         main_window.__init__()
 
     dialog.destroy()
@@ -133,10 +145,12 @@ def add_pv_to_vg(menu_item, pv, main_window):
     if response == 1:
         
         vg_name = dialog.combo.get_active_text()
-        
-        output = subprocess.check_output(['sudo', 'vgextend', vg_name,
-                                          pv['name']])
-        print output
+        try:
+            output = subprocess.check_output(['sudo', 'vgextend', vg_name,
+                                              pv['name']])
+            print output
+        except:
+            print 'Action vgextend failed.'
         
         main_window.__init__()
 
@@ -156,8 +170,11 @@ def remove_element(menu_item, element, main_window):
         
         if response == 1:
             
-            output = subprocess.check_output(['sudo', 'pvremove', element['name']])
-            print output
+            try:
+                output = subprocess.check_output(['sudo', 'pvremove', element['name']])
+                print output
+            except:
+                print 'Action vgreduce failed.'
             
             main_window.__init__()
         
